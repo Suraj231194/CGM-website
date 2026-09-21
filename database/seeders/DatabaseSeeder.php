@@ -21,22 +21,23 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Admin user
-        User::create([
-            'name' => 'System Admin',
-            'email' => 'admin@biogenixCGM.local',
-            'password' => Hash::make('Admin@12345.'),
-            'role' => 'admin',
-        ]);
+        if (app()->environment(['local', 'testing'])) {
+            // Demo accounts must never be seeded in production.
+            User::create([
+                'name' => 'System Admin',
+                'email' => 'admin@biogenixCGM.local',
+                'password' => Hash::make('Admin@12345.'),
+                'role' => 'admin',
+            ]);
 
-        // Test customer
-        User::create([
-            'name' => 'Test Customer',
-            'email' => 'customer@test.com',
-            'phone' => '9876543210',
-            'password' => Hash::make('password'),
-            'role' => 'customer',
-        ]);
+            User::create([
+                'name' => 'Test Customer',
+                'email' => 'customer@test.com',
+                'phone' => '9876543210',
+                'password' => Hash::make('password'),
+                'role' => 'customer',
+            ]);
+        }
 
         // ── Products ──────────────────────────────────────────────
         $biogenix = Product::create([

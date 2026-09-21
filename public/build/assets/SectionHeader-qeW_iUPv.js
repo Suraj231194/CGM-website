@@ -1,0 +1,1 @@
+import{j as s}from"./app-5shXqkxX.js";function t({title:n,subtitle:e,centered:a=!1}){return s.jsxs("div",{className:`mb-10 ${a?"text-center":""}`,children:[s.jsx("h2",{className:"section-heading",children:n}),e&&s.jsx("p",{className:`section-subheading mt-3 ${a?"mx-auto":""}`,children:e})]})}export{t as S};
