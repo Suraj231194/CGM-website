@@ -1,0 +1,227 @@
+Codex-Ready Brief for a Modern Medical Product Website
+Laravel + Inertia.js + React + Tailwind CSS + shadcn/ui-style implementation
+Executive summary
+The website should be built as a modern healthcare product discovery and education platform. It should explain 2 to 3 medical products clearly, build trust, answer common questions, provide patient and clinician resources, capture qualified leads, and redirect users to the main ecommerce website when they decide to buy. This website itself must not implement cart, checkout, payment, subscription billing, or order-management features.
+The reference direction comes from Eversense CGM, Omnipod, and Dexcom: all three use benefit-led product storytelling, strong support content, medical disclaimers, patient education, healthcare provider sections, accessibility links, privacy links, and clear get-started paths. The new website should borrow those UX patterns without copying brand assets, copy, layouts, or protected content.
+Use the following MVC-oriented stack:
+Laravel + Inertia.js + React + Tailwind CSS + shadcn/ui-style components
+
+This gives the project Laravel backend power, React modern UI experience, SPA-like smooth navigation, SEO-friendly server-side routing, and a clean MVC/API structure. The solution should be optimized for content management, product pages, lead forms, support resources, and external purchase redirection.
+Updated scope
+* Display 2 to 3 products with rich product-detail pages, comparison, FAQs, specifications, safety notes, and download resources.
+* Redirect all buying actions to the main ecommerce website using configurable external buy links.
+* Implement lead capture, contact forms, demo/request-information forms, newsletter signup, and healthcare provider inquiry forms.
+* Include CMS/admin management for pages, products, FAQs, blogs, resources, testimonials, and external buy links.
+* Exclude cart, checkout, payment gateway, subscription billing, inventory management, order history, and ecommerce account flows.
+Reference pattern analysis
+The three reference websites converge on a clear pattern: educate, reassure, compare, support, and convert. The conversion for this project is not an on-site purchase. It is either a lead submission or an external buy redirection.
+Reference patternHow to adapt itProduct discoveryUse visually rich product cards, product detail pages, comparison sections, and “Which product is right for me?” guidance.Patient educationAdd learning content, glossary, FAQs, guides, app/setup information, safety information, and downloadable documents.Healthcare provider contentCreate a separate HCP section with product overview, clinical/resources links, request-info form, and disclaimers.Support-first navigationMake Support, FAQ, Contact, Manuals, Compatibility, and Safety Information easy to find from header and footer.Conversion CTAsUse “Learn More”, “Compare Products”, “Request Information”, “Find a Provider”, and “Buy on Main Store” CTAs.
+Selected MVC stack
+Use Laravel as the MVC backend and application shell, with Inertia.js connecting Laravel routes/controllers to React pages. React will power the premium front-end experience, while Laravel will handle routing, controllers, validation, models, CMS/admin workflows, form submissions, and email notifications.
+LayerRecommended choicePurposeBackend / MVCLaravelControllers, routes, services, validation, jobs, policies, models, form handling, and admin workflows.Frontend bridgeInertia.jsConnect Laravel server-side routes with React pages without building a separate API-only SPA.FrontendReact + TypeScriptModern component-driven UI, product comparison, interactive forms, animations, and reusable sections.StylingTailwind CSSFast custom design system with responsive layout, spacing, colors, and typography.UI componentsshadcn/ui-style componentsModern accessible component patterns using Radix-style primitives and Tailwind-based customization.Admin/CMSFilament Admin PanelManage products, pages, FAQs, blogs, forms, resources, redirects, and settings.DatabaseMySQL or PostgreSQLStore products, pages, FAQs, leads, blog posts, resources, redirects, and form submissions.Async jobsLaravel QueuesProcess emails, form notifications, import/export tasks, and background jobs.EmailLaravel Mail + approved email providerSend contact confirmations, lead notifications, and admin alerts.Forms/validationLaravel validation + React Hook Form + ZodStrong server-side and client-side validation for all forms.
+Application architecture
+The project should follow a Laravel-first MVC structure with Inertia React pages. Keep business logic in services/actions instead of placing everything inside controllers.
+Laravel application
+ ??? app/
+ ?   ??? Http/Controllers
+ ?   ?   ??? HomeController.php
+ ?   ?   ??? ProductController.php
+ ?   ?   ??? BlogController.php
+ ?   ?   ??? SupportController.php
+ ?   ?   ??? HcpController.php
+ ?   ?   ??? LeadController.php
+ ?   ??? Models
+ ?   ?   ??? Product.php
+ ?   ?   ??? ProductFeature.php
+ ?   ?   ??? Faq.php
+ ?   ?   ??? BlogPost.php
+ ?   ?   ??? Resource.php
+ ?   ?   ??? Lead.php
+ ?   ?   ??? RedirectLink.php
+ ?   ??? Services
+ ?   ?   ??? LeadCaptureService.php
+ ?   ?   ??? ProductComparisonService.php
+ ?   ?   ??? SeoMetadataService.php
+ ?   ?   ??? ExternalRedirectService.php
+ ?   ??? Jobs / Queues
+ ?   ??? Policies
+ ?   ??? Mail
+ ??? routes/
+ ?   ??? web.php
+ ?   ??? api.php only where needed
+ ??? resources/js/
+     ??? Pages
+     ?   ??? Home
+     ?   ??? Products
+     ?   ??? Support
+     ?   ??? Blog
+     ?   ??? Hcp
+     ?   ??? Contact
+     ?   ??? RedirectNotice
+     ??? Components
+     ??? Layouts
+     ??? lib
+
+User flows
+FlowStepsFinal actionProduct discovery flowHome -> Product listing -> Product detail -> Compare products -> FAQ/resourcesUser clicks “Buy on Main Store” or submits inquiry form.External buy redirect flowProduct detail -> Buy CTA -> Redirect notice/interstitial -> Main ecommerce product URLThe main ecommerce website handles cart and payment.Lead capture flowCTA -> Request info form -> Validation -> Thank-you page -> Admin notificationSales/support team receives the inquiry.Healthcare provider flowHCP landing -> product education -> clinical/resources -> HCP inquiry formHCP lead is captured and categorized.Support flowSupport landing -> search/filter FAQ -> manual/video/resource -> contact escalationUser gets answer or submits support request.Blog/education flowLearning center -> category -> article -> related product/resource CTAUser continues education or moves to product detail.
+Information architecture and page specifications
+Global navigation
+AreaNavigation itemsPrimary navProducts, Compare, How It Works, Resources, Support, Healthcare Providers, BlogUtility navContact, Accessibility, Safety Information, Language/Region if requiredPrimary CTAsRequest Information, Find a Provider, Buy on Main StoreFooterProducts, Support, FAQs, Manuals, Privacy, Terms, Accessibility, Safety Information, Contact
+Required pages
+PagePurposeRequired sectionsPrimary CTAHomeCreate trust and route users quickly.Hero, 2-3 product snapshot, benefits, how it works, testimonials, support teaser, FAQ teaser, safety links.Explore ProductsProducts listingShow all available products.Product cards, filters if needed, product highlights, comparison teaser, external buy CTA.Compare ProductsProduct detailExplain one product deeply.Hero, benefits, how it works, specs, compatibility, FAQs, resources, safety notes, buy redirect.Buy on Main StoreCompare productsHelp users select between 2-3 products.Comparison table, best-for guidance, feature differences, FAQs.View ProductHow It WorksExplain device or product workflow.Step-by-step visuals, setup, usage, app/device compatibility if applicable.Request InformationResourcesEducation and downloads.Guides, manuals, videos, glossary, product documents, safety documents.Download GuideSupport / FAQSelf-service support.Search, categories, troubleshooting, manuals, contact escalation.Contact SupportHealthcare ProvidersProfessional-facing product information.HCP overview, clinical resources, patient discussion guide, HCP inquiry form.Request HCP InfoBlog / Learning CenterSEO and education.Category hub, articles, related products, medically reviewed content metadata.Read MoreContact / Lead formCapture inquiries.Role selector, product interest, contact details, consent checkbox, thank-you page.Submit RequestRedirect noticeSafely hand off to ecommerce site.Message explaining user is leaving this website, destination product, continue/cancel buttons.Continue to StoreLegal / SafetyBuild trust and meet regulatory needs.Privacy, terms, cookie settings, accessibility statement, safety information.N/A
+Product display and external buying model
+This website must not behave like an ecommerce store. It should provide product education and then redirect users to the main ecommerce website for purchasing.
+* Each product has one or more admin-configurable external buy URLs.
+* Each “Buy on Main Store” click should open an interstitial redirect notice or a clearly labeled external link.
+* Track only safe, non-sensitive analytics such as product slug, CTA location, and redirect destination key.
+* Do not store payment data, cart data, order data, subscription status, or inventory data in this website.
+* Use UTM parameters or redirect IDs when the main ecommerce site requires campaign attribution.
+* Provide fallback contact/request-info CTA when a product is not available for online purchase.
+UI packages for a modern Laravel website
+For a premium healthcare-style UI, use React with Tailwind CSS and shadcn/ui-style components. The UI should feel clean, soft, accessible, and trustworthy.
+Package / patternUseTailwind CSSCore styling, responsive layouts, design tokens, spacing, typography, and utility classes.shadcn/ui-style componentsButtons, cards, accordions, dialogs, sheets, tabs, forms, command/search, and navigation primitives.Framer MotionSubtle section reveals, product image motion, CTA transitions, and reduced-motion-aware animations.Lucide IconsConsistent icon system for product features, support categories, and navigation.Headless UI / Radix-style primitivesAccessible dialogs, dropdowns, tabs, accordions, tooltips, and popovers.RechartsOptional lightweight charts for product benefits, comparison visuals, or educational statistics.TanStack TableProduct comparison table, resources table, FAQ/admin data tables if needed.React Hook FormFast accessible forms with strong validation and good error handling.Zod validationShared schema validation patterns for front-end form validation.
+Design system guidance
+Use a token-first design system so the brand can evolve without rewriting components.
+:root {
+  --color-bg: #f7fafc;
+  --color-surface: #ffffff;
+  --color-text: #102030;
+  --color-text-muted: #5b6b7a;
+  --color-brand: #0f766e;
+  --color-brand-strong: #115e59;
+  --color-accent: #2563eb;
+  --color-success: #0f9d58;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+  --color-border: #d9e2ec;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 1px 2px rgba(16, 32, 48, 0.08);
+  --shadow-md: 0 8px 24px rgba(16, 32, 48, 0.08);
+}
+
+Component groupRequired componentsNavigationSticky header, utility bar, mega-menu, mobile drawer, breadcrumbs, footer.Product marketingHero sections, feature cards, product cards, comparison cards, proof strips, testimonials.External purchase handoffBuy CTA, redirect notice page, external-link warning, unavailable-product fallback CTA.FormsText inputs, selects, phone/email fields, consent checkbox, validation messages, success states.Support/contentFAQ accordion, resource cards, video block, manual download card, related article cards.FeedbackToast, inline alert, loading state, empty state, success confirmation, error summary.Admin/CMSProduct editor, FAQ editor, blog editor, resource manager, lead inbox, redirect-link manager.
+Data model outline
+EntityPurposeImportant fieldsProductRepresents one of the 2-3 displayed products.name, slug, short_description, long_description, image, status, display_order.ProductFeatureReusable feature bullets for product pages.product_id, icon, title, description, display_order.ProductSpecificationStructured specs table.product_id, label, value, group, display_order.ProductComparisonItemData used for compare page.product_id, category, label, value, highlight.RedirectLinkConfigurable external buy links.product_id, label, destination_url, campaign_code, is_active.FaqFAQ content for product/support pages.question, answer, category, product_id, display_order.ResourceManuals, guides, PDFs, videos.title, type, file_url, external_url, product_id, is_public.BlogPostLearning center content.title, slug, excerpt, body, category, author, reviewer, published_at.LeadContact/request-info submissions.name, email, phone, role, product_interest, message, consent, source_page.SiteSettingGlobal settings.brand details, contact info, social links, safety text, footer links.
+Laravel routes and form contracts
+GET  /                         HomeController@index
+GET  /products                 ProductController@index
+GET  /products/{slug}          ProductController@show
+GET  /compare                  ProductController@compare
+GET  /how-it-works             PageController@howItWorks
+GET  /resources                ResourceController@index
+GET  /support                  SupportController@index
+GET  /hcp                      HcpController@index
+GET  /blog                     BlogController@index
+GET  /blog/{slug}              BlogController@show
+GET  /contact                  ContactController@index
+POST /leads                    LeadController@store
+GET  /buy/{product}/{linkKey}  RedirectController@showNotice
+POST /redirect-events          RedirectEventController@store
+
+Lead form example
+POST /leads
+Content-Type: application/json
+
+{
+  "name": "Ava Shah",
+  "email": "ava@example.com",
+  "phone": "+1 555 0100",
+  "role": "patient",
+  "productInterest": "product-a",
+  "message": "I would like more information.",
+  "consentToContact": true,
+  "sourcePage": "/products/product-a"
+}
+
+Codex-ready implementation prompt
+Use this prompt in Codex to generate the project implementation. It is aligned with the revised Laravel stack and non-ecommerce scope.
+Build a fully functional modern medical product website inspired by the UX quality of Eversense CGM, Omnipod, and Dexcom, without copying their branding, content, or assets.
+
+Important scope:
+- This is NOT an ecommerce website.
+- The site displays only 2 to 3 products.
+- Product pages must educate users and redirect buying actions to the main ecommerce website.
+- Do not implement cart, checkout, payment gateway, subscriptions, inventory, order history, or on-site ecommerce account flow.
+Required stack:
+- Laravel MVC backend
+- Inertia.js
+- React with TypeScript
+- Tailwind CSS
+- shadcn/ui-style components
+- Filament Admin Panel for CMS/admin management
+- MySQL or PostgreSQL
+- Laravel queues for email/background processing
+
+Core pages:
+- Home
+- Products listing
+- Product detail for 2-3 products
+- Product comparison
+- How It Works
+- Resources / Downloads
+- Support / FAQ
+- Healthcare Providers
+- Blog / Learning Center
+- Contact / Request Information
+- Redirect notice page before sending user to the main ecommerce website
+- Legal, Privacy, Accessibility, and Safety Information pages
+
+Admin/CMS requirements:
+- Manage products, features, specifications, FAQs, comparison rows, resources, blog posts, testimonials, safety text, and external buy links.
+- Manage lead submissions and mark their status.
+- External buy URLs must be editable from admin.
+- Allow enabling/disabling a buy link per product.
+
+UI requirements:
+- Premium healthcare-style design with large clean typography, soft whitespace, rounded cards, accessible contrast, modern product sections, subtle Framer Motion animations, Lucide icons, and responsive layouts.
+- Use reusable React components: Header, Footer, ProductCard, ProductHero, FeatureGrid, ComparisonTable, FAQAccordion, ResourceCard, LeadForm, RedirectNotice, TestimonialCard, BlogCard, SafetyNotice.
+- Use React Hook Form and Zod-style validation on the client, plus Laravel validation on the server.
+
+Functional requirements:
+- Lead forms must validate and save to database.
+- Send email notification to admin after lead submission.
+- Show a thank-you page after successful submission.
+- Buy CTA must route to a redirect notice page, then continue to the configured external ecommerce URL.
+- Track buy redirect events without storing sensitive health data.
+- Blog and resource pages must be SEO-friendly.
+
+SEO and accessibility:
+- Use semantic HTML, one H1 per page, accessible forms, keyboard-friendly navigation, alt text, visible focus states, and WCAG-friendly contrast.
+- Add metadata, canonical URLs, sitemap, robots policy, Product schema, FAQ schema, Article schema, Organization schema, and Breadcrumb schema where applicable.
+
+Deliverables:
+- Laravel project structure
+- Database migrations, models, seeders, factories
+- Controllers, services/actions, form requests, policies where needed
+- Inertia React pages and reusable UI components
+- Filament resources for CMS/admin
+- Lead submission flow
+- External buy redirect flow
+- SEO metadata helper
+- Responsive design and sample seed content for 2-3 products
+- Tests for forms, redirects, and key pages
+
+Accessibility, privacy, SEO, and performance
+AreaRequirementAccessibilityTarget WCAG-friendly design: semantic HTML, keyboard access, visible focus states, proper form labels, error summaries, alt text, and sufficient contrast.PrivacyDo not collect sensitive health data unless explicitly required. Keep forms minimal and include consent-to-contact language.TrackingTrack page views, CTA clicks, lead submissions, support searches, and external-buy redirects. Do not send sensitive form data to analytics tools.SEOGenerate unique titles, meta descriptions, canonical URLs, sitemap, structured data, and readable content for all public pages.PerformanceOptimize images, defer third-party scripts, keep public pages lightweight, and use server-rendered content where practical.SecurityUse CSRF protection, rate limiting on forms, server-side validation, spam protection, secure admin authentication, and least-privilege admin roles.
+Analytics event taxonomy
+EventPropertiesPurposepage_viewroute, page_type, product_slug, personaUnderstand content engagement.cta_clickcta_id, page, section, product_slugMeasure CTA effectiveness.product_viewedproduct_slug, source_pageMeasure product interest.compare_viewedproducts_comparedMeasure comparison engagement.lead_form_startedform_id, source_page, product_slugMeasure form intent.lead_form_submittedform_id, source_page, product_slugMeasure successful conversions.buy_redirect_startedproduct_slug, link_key, source_pageMeasure external buy intent.buy_redirect_confirmedproduct_slug, destination_keyMeasure handoff to main store.support_searchquery, result_countImprove support content.resource_downloadedresource_id, product_slugMeasure resource usage.
+QA and testing checklist
+AreaMinimum launch coverageUnit testsModels, services/actions, validation rules, redirect URL resolver, SEO metadata helper.Feature testsHome page, product pages, compare page, lead form submission, redirect notice flow.Component testsHeader, product card, comparison table, FAQ accordion, lead form, redirect notice.Accessibility testsKeyboard navigation, form labels, focus management, contrast checks, screen-reader-friendly error messages.Performance testsImage optimization, Lighthouse pass, no heavy JavaScript on simple marketing pages.Security testsCSRF, rate limiting, spam protection, admin authorization, safe external redirect allowlist.Content QAMedical/legal review, broken links, resource download checks, structured data validation.
+Prioritized backlog
+PriorityEpicScopeEstimateP0Laravel + Inertia foundationInstall Laravel, Inertia, React, TypeScript, Tailwind, base layouts, route structure.MP0Design system foundationTokens, typography, buttons, cards, forms, nav, footer, alerts.MP0Public pages MVPHome, products listing, product detail, compare, how it works, support, contact.LP0Product CMSFilament resources for products, features, specs, comparison rows, FAQs, resources.MP0External buy redirectConfigurable buy links, redirect notice page, click tracking, allowlist validation.MP0Lead captureContact/request-info/HCP forms, validation, database storage, email notification.MP1Blog and learning centerBlog categories, article pages, related products, SEO fields.MP1Support hubFAQ search/filter, manual/resource downloads, contact escalation.MP1SEO foundationMetadata, sitemap, robots, schema, canonical URLs.SP1Accessibility and performance hardeningKeyboard QA, contrast, image optimization, Lighthouse improvements.MP2Advanced CMS workflowsDraft/publish status, preview, reviewer metadata, content scheduling.MP2Analytics dashboardsBasic reporting for product views, lead forms, redirect clicks, support searches.M
+Recommended default decisions
+Decision areaRecommendationMVC frameworkLaravelFrontend bridgeInertia.jsFrontend UIReact + TypeScriptStylingTailwind CSSComponent foundationshadcn/ui-style components with Radix-style accessible primitivesAdmin/CMSFilament Admin PanelDatabaseMySQL or PostgreSQLFormsReact Hook Form + Zod-style client validation + Laravel Form Request validationBuying modelExternal redirect to main ecommerce website onlyCommerce featuresDo not implement cart, checkout, payment, subscription, inventory, or order managementAnalyticsFirst-party event tracking for page views, leads, support searches, and buy redirectsSEOServer-rendered content, metadata, sitemap, structured data, and clean URLs
+Open questions
+* What are the exact names of the 2 to 3 products?
+* What is the main ecommerce website URL for each product?
+* Should the external buy redirect open in the same tab or a new tab?
+* Which lead forms are required: patient, caregiver, healthcare provider, distributor, or general contact?
+* Will the site need multi-language or multi-region content?
+* Who will approve medical, legal, privacy, and safety copy before launch?
+* What email address or CRM endpoint receives lead notifications?
+Reference websites
+* Eversense CGM - https://www.eversensecgm.com
+* Omnipod - https://www.omnipod.com
+* Dexcom - https://www.dexcom.com
