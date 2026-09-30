@@ -12,28 +12,26 @@ export default function SafetyNotice({ productName, id, compact = false }) {
     const subject = productName ? `The ${productName} is a medical device.` : 'biogenixCGM products are medical devices.';
 
     return (
-        <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className={compact ? '' : 'border-t border-ink-900/[0.06] bg-sand-50 py-10'}>
+        <section id={id} aria-labelledby={id ? `${id}-title` : undefined} className={compact ? '' : 'border-t border-ink-900/[0.08] py-12'}>
             <div className={compact ? '' : 'container-page'}>
-                <div className="rounded-3xl border border-ink-900/[0.07] bg-white p-6 shadow-soft md:p-8">
+                <div className={compact ? 'rounded-3xl border border-ink-900/[0.07] bg-white p-6 shadow-soft md:p-8' : ''}>
                     <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-8">
                         <div className="flex items-center gap-3 md:w-64 md:shrink-0 md:flex-col md:items-start">
-                            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
-                                <ShieldCheck size={22} aria-hidden="true" />
-                            </span>
+                            <ShieldCheck size={20} className="shrink-0 text-brand-600" aria-hidden="true" />
                             <h2 id={id ? `${id}-title` : undefined} className="text-base font-semibold text-ink-900">
                                 Important safety information
                             </h2>
                         </div>
 
                         <div className="flex-1">
-                            <p className="text-sm leading-relaxed text-ink-600">
+                            <p className="max-w-[36rem] text-sm leading-relaxed text-ink-600">
                                 <strong className="font-semibold text-ink-900">{subject}</strong>{' '}
                                 Read all warnings, precautions and instructions for use before use, and talk to your
                                 healthcare provider about whether a product is right for you.
                             </p>
 
                             <details className="group mt-4">
-                                <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-900 [&::-webkit-details-marker]:hidden">
+                                <summary className="-my-2 inline-flex cursor-pointer list-none items-center gap-1.5 py-2 text-sm font-semibold text-brand-700 hover:text-brand-900 [&::-webkit-details-marker]:hidden">
                                     Read the full safety information
                                     <ChevronDown size={16} className="transition-transform duration-300 group-open:rotate-180" aria-hidden="true" />
                                 </summary>

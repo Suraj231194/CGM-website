@@ -3,24 +3,49 @@
 @tailwind utilities;
 
 /*
- * Fonts are loaded from the document head (resources/views/app.blade.php) rather than an
- * @import here, so the browser can start fetching them before this stylesheet arrives.
+ * Fraunces is self-hosted as a variable font (weight and optical-size axes), so headlines
+ * get the true display cut and the light italic. The latin-ext files carry accented letters
+ * and the rupee sign, and only download on pages that use them. Inter is linked from the
+ * document head.
  */
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-var-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url('/fonts/fraunces-var-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 300 500;
+  font-display: swap;
+  src: url('/fonts/fraunces-var-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 300 500;
+  font-display: swap;
+  src: url('/fonts/fraunces-var-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
 
 @layer base {
   :root {
-    --color-brand: #1d5859;
-    --color-brand-light: #2f8683;
-    --color-brand-dark: #173c3d;
-    --color-accent: #7de3d3;
-    --color-bg: #f7f6f2;
-    --color-surface: #ffffff;
-    --color-text: #122326;
-    --color-text-muted: #56696c;
-    --color-border: rgba(18, 35, 38, 0.08);
-    --color-success: #15803d;
-    --color-warning: #b45309;
-    --color-danger: #c2410c;
     --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
     --header-height: 72px;
   }
@@ -49,10 +74,10 @@
     border-radius: 6px;
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
+  /* On dark sections the brand teal is too close to the background; use the glow tone. */
+  .bg-radiance :focus-visible,
+  .bg-ink-950 :focus-visible {
+    outline-color: theme('colors.glow');
   }
 }
 
@@ -79,30 +104,40 @@
     @apply text-glow;
   }
 
+  /* Centred eyebrows get a matching trailing dash so they sit optically centred. */
+  .eyebrow-center {
+    @apply justify-center;
+  }
+
+  .eyebrow-center::after {
+    content: '';
+    @apply h-px w-6 bg-current opacity-60;
+  }
+
   /* ── Buttons ──────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-full bg-brand-700 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-full bg-brand-700 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-primary transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-800 hover:shadow-primary-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-full border border-ink-900/15 bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-900 transition duration-300 ease-premium hover:-translate-y-px hover:border-brand-600 hover:text-brand-700 hover:shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-full border border-ink-900/15 bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-900 transition duration-300 ease-premium hover:-translate-y-px hover:border-brand-600 hover:text-brand-700 hover:shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
   }
 
   .btn-accent {
-    @apply inline-flex items-center justify-center rounded-full bg-ink-950 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-ink-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-full bg-ink-950 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-ink-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60;
   }
 
   /* For dark sections: a bright filled pill and a quiet outlined one. */
   .btn-light {
-    @apply inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-950 shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-50 hover:shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-full bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-950 shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-50 hover:shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
   }
 
   .btn-ghost-light {
-    @apply inline-flex items-center justify-center rounded-full border border-white/25 px-6 py-3 text-[0.9375rem] font-semibold text-white transition duration-300 ease-premium hover:border-white/60 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
+    @apply inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/25 px-6 py-3 text-[0.9375rem] font-semibold text-white transition duration-300 ease-premium hover:border-white/60 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
   }
 
   .link-arrow {
-    @apply inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900;
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900;
   }
 
   .link-arrow svg {
@@ -155,12 +190,17 @@
     @apply font-display text-display-sm font-normal text-balance text-ink-950 md:text-display-md;
   }
 
+  /* For headings that share a row with other content (two-column layouts). */
+  .section-heading-split {
+    @apply font-display text-display-sm font-normal text-balance text-ink-950 md:text-display-md lg:text-display-sm xl:text-display-md;
+  }
+
   .section-subheading {
-    @apply max-w-2xl text-lg leading-relaxed text-ink-500;
+    @apply max-w-2xl text-lg leading-relaxed text-ink-500 md:text-xl;
   }
 
   .glass-header {
-    @apply border-b border-ink-900/[0.06] bg-canvas/80 backdrop-blur-xl backdrop-saturate-150;
+    @apply border-b border-ink-900/[0.06] bg-canvas/95 backdrop-blur-xl;
   }
 
   /* ── Forms ────────────────────────────────────────────────── */
@@ -169,7 +209,8 @@
   }
 
   .field {
-    @apply block w-full rounded-2xl border-ink-900/15 bg-white px-4 py-3 text-[0.9375rem] text-ink-900 shadow-inset transition placeholder:text-ink-300 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
+    /* 16px on phones stops iOS zooming on focus; the border keeps 3:1 contrast. */
+    @apply block w-full rounded-2xl border-ink-900/50 bg-white px-4 py-3 text-base text-ink-900 shadow-inset transition placeholder:text-ink-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/25 sm:text-[0.9375rem];
   }
 
   .field-error {
@@ -178,7 +219,7 @@
 
   /* ── Long-form content (product descriptions, articles) ───── */
   .prose-content {
-    @apply max-w-none text-[1.0625rem] leading-[1.8] text-ink-700;
+    @apply max-w-[36rem] text-[1.0625rem] leading-[1.8] text-ink-700;
   }
 
   .prose-content > * + * {
@@ -245,14 +286,14 @@
     text-wrap: pretty;
   }
 
-  /* Warm, luminous backdrop for light heroes; fades back to the page colour at its foot. */
+  /* Warm, luminous backdrop for light heroes; fades in from the header and out at its foot. */
   .bg-aurora {
     background-color: theme('colors.canvas');
     background-image:
-      linear-gradient(to bottom, rgba(247, 246, 242, 0) 70%, rgba(247, 246, 242, 1) 100%),
-      radial-gradient(55% 60% at 85% 12%, rgba(125, 227, 211, 0.28), transparent 70%),
-      radial-gradient(40% 45% at 0% 45%, rgba(47, 134, 131, 0.08), transparent 70%),
-      radial-gradient(35% 40% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%);
+      linear-gradient(to bottom, rgba(247, 246, 242, 1) 0%, rgba(247, 246, 242, 0) 14%, rgba(247, 246, 242, 0) 72%, rgba(247, 246, 242, 1) 100%),
+      radial-gradient(55% 65% at 82% 34%, rgba(120, 190, 205, 0.24), transparent 70%),
+      radial-gradient(45% 55% at 6% 60%, rgba(222, 203, 164, 0.2), transparent 70%),
+      radial-gradient(40% 45% at 50% 0%, rgba(255, 255, 255, 0.85), transparent 70%);
   }
 
   /* Deep ink backdrop with a soft teal radiance, for dark sections. */
@@ -301,7 +342,6 @@
     opacity 0.9s var(--ease-premium),
     transform 0.9s var(--ease-premium);
   transition-delay: var(--reveal-delay, 0ms);
-  will-change: opacity, transform;
 }
 
 .reveal.is-visible {
@@ -355,7 +395,7 @@
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition: none !important;
   }
 
   .reveal,

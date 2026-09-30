@@ -35,7 +35,7 @@ export default function Dashboard({ stats, recentOrders, recentLeads }) {
 
     return (
         <AdminLayout>
-            <Head title="Admin Dashboard — BiogenixCGM" />
+            <Head title="Admin Dashboard" />
 
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-800">Console Dashboard</h1>
@@ -85,18 +85,18 @@ export default function Dashboard({ stats, recentOrders, recentLeads }) {
                                     <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                                         {recentOrders.map((order) => (
                                             <tr key={order.id} className="hover:bg-slate-50/50">
-                                                <td className="py-4.5 px-5 font-bold font-mono text-xs">#{order.order_number}</td>
-                                                <td className="py-4.5 px-5">
+                                                <td className="py-4 px-5 font-bold font-mono text-xs">#{order.order_number}</td>
+                                                <td className="py-4 px-5">
                                                     <div className="font-semibold text-slate-800">{order.user?.name}</div>
                                                     <div className="text-xs text-slate-400">{order.user?.email}</div>
                                                 </td>
-                                                <td className="py-4.5 px-5">
+                                                <td className="py-4 px-5">
                                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getStatusStyle(order.status)} uppercase tracking-wider`}>
                                                         {order.status}
                                                     </span>
                                                 </td>
-                                                <td className="py-4.5 px-5 text-right font-bold text-slate-800">₹{Number(order.total).toLocaleString('en-IN')}</td>
-                                                <td className="py-4.5 px-5 text-center">
+                                                <td className="py-4 px-5 text-right font-bold text-slate-800">₹{Number(order.total).toLocaleString('en-IN')}</td>
+                                                <td className="py-4 px-5 text-center">
                                                     <Link href={`/admin/orders/${order.id}`} className="text-xs font-semibold text-teal-700 hover:text-teal-850 hover:underline">
                                                         Manage
                                                     </Link>

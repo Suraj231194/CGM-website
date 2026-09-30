@@ -9,7 +9,7 @@ export default function Index({ leads }) {
 
     return (
         <AdminLayout>
-            <Head title="Contact Leads — BiogenixCGM" />
+            <Head title="Contact Leads" />
 
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-800">Inbound Leads</h1>
@@ -44,14 +44,14 @@ export default function Index({ leads }) {
 
                                     return (
                                         <tr key={lead.id} className={`hover:bg-slate-50/50 ${!lead.is_read ? 'bg-teal-50/10' : ''}`}>
-                                            <td className="py-4.5 px-6">
-                                                <div className="font-bold text-slate-850">{lead.name}</div>
+                                            <td className="py-4 px-6">
+                                                <div className="font-bold text-slate-900">{lead.name}</div>
                                                 <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><Mail size={12} className="text-slate-400" /> {lead.email}</div>
                                                 {lead.phone && (
                                                     <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1"><Phone size={12} className="text-slate-400" /> {lead.phone}</div>
                                                 )}
                                             </td>
-                                            <td className="py-4.5 px-6">
+                                            <td className="py-4 px-6">
                                                 <div className="font-semibold text-slate-800 text-xs bg-slate-100 px-2 py-0.5 rounded-md inline-block uppercase tracking-wide">
                                                     {lead.role}
                                                 </div>
@@ -59,15 +59,15 @@ export default function Index({ leads }) {
                                                     <Tag size={12} /> {lead.product_interest || 'General Info'}
                                                 </div>
                                             </td>
-                                            <td className="py-4.5 px-6 max-w-sm">
+                                            <td className="py-4 px-6 max-w-sm">
                                                 <p className="text-slate-600 text-xs leading-relaxed line-clamp-3 italic">
                                                     "{lead.message}"
                                                 </p>
                                             </td>
-                                            <td className="py-4.5 px-6 text-slate-500 text-xs font-semibold">
+                                            <td className="py-4 px-6 text-slate-500 text-xs font-semibold">
                                                 <span className="flex items-center gap-1"><Calendar size={13} /> {date}</span>
                                             </td>
-                                            <td className="py-4.5 px-6 text-center">
+                                            <td className="py-4 px-6 text-center">
                                                 <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${lead.is_read ? 'bg-slate-50 text-slate-500 border-slate-200' : 'bg-teal-50 text-teal-700 border-teal-100'}`}>
                                                     {lead.is_read ? (
                                                         <>
@@ -80,7 +80,7 @@ export default function Index({ leads }) {
                                                     )}
                                                 </span>
                                             </td>
-                                            <td className="py-4.5 px-6 text-center">
+                                            <td className="py-4 px-6 text-center">
                                                 {!lead.is_read && (
                                                     <button
                                                         onClick={() => handleMarkRead(lead.id)}

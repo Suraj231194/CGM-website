@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\EmailService;
+use App\Support\GuestCart;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -100,8 +101,13 @@ class RegisteredUserController extends Controller
 
         event(new Registered($user));
 
+        // Auth::login() migrates the session to a new id; keep the guest cart.
+        $guestSessionId = $request->session()->getId();
+
         Auth::login($user);
 
-        return redirect('/');
+        GuestCart::mergeInto($guestSessionId, $user);
+
+        return redirect()->intended('/');
     }
 }

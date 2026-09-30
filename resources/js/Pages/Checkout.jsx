@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head, Link, usePage, router } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import {
     ShoppingCart,
@@ -9,9 +9,29 @@ import {
     Loader2,
     ShieldCheck,
     AlertCircle,
-    ArrowLeft
+    ArrowLeft,
+    Info
 } from 'lucide-react';
 import axios from 'axios';
+
+// Appended to .field when the server rejects a value.
+const INVALID_FIELD = ' border-red-400 focus:border-red-500 focus:ring-red-500/15';
+
+// Error text under a field; the input points at it through aria-describedby.
+function FieldError({ id, message }) {
+    if (!message) return null;
+
+    return (
+        <p id={id} className="field-error">
+            <AlertCircle size={13} className="shrink-0" aria-hidden="true" /> {message}
+        </p>
+    );
+}
+
+// The asterisk is decorative; the input's `required` is what assistive tech announces.
+function RequiredMark() {
+    return <span className="text-ink-400" aria-hidden="true"> *</span>;
+}
 
 export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings = null, user = null }) {
     const { errors: serverErrors } = usePage().props;
@@ -81,214 +101,276 @@ export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings
         });
     };
 
+    // Shared field wiring: the invalid state and the id of the field's error text.
+    const invalidProps = (key, id) => ({
+        'aria-invalid': errors[key] ? 'true' : undefined,
+        'aria-describedby': errors[key] ? `${id}-error` : undefined,
+    });
+
+    const fieldClass = (key, extra = '') => `field${extra}${errors[key] ? INVALID_FIELD : ''}`;
+
+    // The pincode field can carry both a validation error and the shipping-lookup notice.
+    const pincodeDescribedBy = [
+        errors.pincode && 'checkout-pincode-error',
+        shippingError && 'checkout-pincode-shipping-error',
+    ].filter(Boolean).join(' ') || undefined;
+
     const grandTotal = subtotal + (shippingCharge || 0);
+
+    // The confirm button sits outside the form, so a rejected submit is also announced beside it.
+    const hasErrors = Object.keys(errors || {}).length > 0;
 
     return (
         <MainLayout>
-            <Head title="Secure Checkout — BiogenixCGM" />
+            <Head title="Secure checkout" />
 
-            <div className="bg-slate-50 min-h-screen py-12">
-                <div className="max-w-7xl mx-auto px-4">
+            <div className="pb-20 pt-8 md:pt-12">
+                <div className="container-page">
                     {/* Back Button */}
-                    <button 
+                    <button
                         type="button"
-                        onClick={() => window.history.back()} 
-                        className="flex items-center gap-1.5 text-slate-500 hover:text-teal-700 text-sm font-semibold mb-6 transition"
+                        onClick={() => window.history.back()}
+                        className="mb-6 inline-flex items-center gap-1.5 text-sm font-medium text-ink-500 transition-colors hover:text-brand-700"
                     >
-                        <ArrowLeft size={16} /> Back to Shopping
+                        <ArrowLeft size={16} aria-hidden="true" /> Back to shopping
                     </button>
 
-                    <h1 className="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-2">
-                        <ShieldCheck className="text-teal-700" size={32} /> Secure Checkout
-                    </h1>
+                    <div className="mb-8 md:mb-10">
+                        <p className="eyebrow"><ShieldCheck size={14} aria-hidden="true" /> Secure checkout</p>
+                        <h1 className="mt-3 section-heading">Checkout</h1>
+                    </div>
 
-                    <div className="grid lg:grid-cols-12 gap-8 items-start">
+                    <div className="grid items-start gap-8 lg:grid-cols-12">
                         {/* Left Column: Form Details */}
-                        <form onSubmit={handleCheckoutSubmit} className="lg:col-span-7 space-y-6">
+                        <form onSubmit={handleCheckoutSubmit} className="space-y-6 lg:col-span-7">
                             {/* Shipping Address */}
-                            <div className="card p-6 bg-white border border-slate-100 space-y-6">
-                                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b pb-3">
-                                    <Truck size={20} className="text-teal-700" /> Shipping Details
+                            <div className="card space-y-6 p-6 sm:p-8">
+                                <h2 className="flex items-center gap-3 border-b border-ink-900/[0.06] pb-4 font-display text-xl font-normal text-ink-950">
+                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                        <Truck size={18} aria-hidden="true" />
+                                    </span>
+                                    Shipping details
                                 </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Full Name *</label>
+                                        <label htmlFor="checkout-name" className="field-label">Full name<RequiredMark /></label>
                                         <input
+                                            id="checkout-name"
                                             type="text"
                                             value={checkoutForm.name}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, name: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.name ? 'border-red-300' : ''}`}
+                                            className={fieldClass('name')}
+                                            autoComplete="name"
+                                            {...invalidProps('name', 'checkout-name')}
                                             required
                                         />
-                                        {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                                        <FieldError id="checkout-name-error" message={errors.name} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Contact Phone *</label>
+                                        <label htmlFor="checkout-phone" className="field-label">Contact phone<RequiredMark /></label>
                                         <input
+                                            id="checkout-phone"
                                             type="text"
+                                            inputMode="tel"
                                             value={checkoutForm.phone}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, phone: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.phone ? 'border-red-300' : ''}`}
+                                            className={fieldClass('phone')}
+                                            autoComplete="tel"
+                                            {...invalidProps('phone', 'checkout-phone')}
                                             required
                                         />
-                                        {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                                        <FieldError id="checkout-phone-error" message={errors.phone} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Email *</label>
+                                        <label htmlFor="checkout-email" className="field-label">Email<RequiredMark /></label>
                                         <input
+                                            id="checkout-email"
                                             type="email"
                                             value={checkoutForm.email}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, email: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.email ? 'border-red-300' : ''}`}
+                                            className={fieldClass('email')}
+                                            autoComplete="email"
+                                            {...invalidProps('email', 'checkout-email')}
                                             required
                                         />
-                                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                        <FieldError id="checkout-email-error" message={errors.email} />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Address Line 1 *</label>
+                                        <label htmlFor="checkout-address1" className="field-label">Address line 1<RequiredMark /></label>
                                         <input
+                                            id="checkout-address1"
                                             type="text"
                                             value={checkoutForm.address_line_1}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, address_line_1: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.address_line_1 ? 'border-red-300' : ''}`}
+                                            className={fieldClass('address_line_1')}
                                             placeholder="Flat no., Building, Street name"
+                                            autoComplete="address-line1"
+                                            {...invalidProps('address_line_1', 'checkout-address1')}
                                             required
                                         />
-                                        {errors.address_line_1 && <p className="text-red-500 text-xs mt-1">{errors.address_line_1}</p>}
+                                        <FieldError id="checkout-address1-error" message={errors.address_line_1} />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Address Line 2 (Landmark / Suite)</label>
+                                        <label htmlFor="checkout-address2" className="field-label">Address line 2 (landmark / suite)</label>
                                         <input
+                                            id="checkout-address2"
                                             type="text"
                                             value={checkoutForm.address_line_2}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, address_line_2: e.target.value })}
-                                            className="w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500"
+                                            className={fieldClass('address_line_2')}
                                             placeholder="Apartment, suite, unit, landmark, etc. (optional)"
+                                            autoComplete="address-line2"
+                                            {...invalidProps('address_line_2', 'checkout-address2')}
                                         />
+                                        <FieldError id="checkout-address2-error" message={errors.address_line_2} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Pincode *</label>
+                                        <label htmlFor="checkout-pincode" className="field-label">Pincode<RequiredMark /></label>
                                         <div className="relative">
                                             <input
+                                                id="checkout-pincode"
                                                 type="text"
+                                                inputMode="numeric"
                                                 maxLength={6}
                                                 value={checkoutForm.pincode}
                                                 onChange={(e) => setCheckoutForm({ ...checkoutForm, pincode: e.target.value })}
-                                                className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.pincode ? 'border-red-300' : ''}`}
+                                                className={fieldClass('pincode', ' pr-10')}
                                                 placeholder="6-digit pincode"
+                                                autoComplete="postal-code"
+                                                aria-invalid={errors.pincode ? 'true' : undefined}
+                                                aria-describedby={pincodeDescribedBy}
                                                 required
                                             />
-                                            {loadingShipping && <Loader2 className="animate-spin absolute right-3 top-3 text-slate-400" size={16} />}
+                                            {loadingShipping && (
+                                                <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center">
+                                                    <Loader2 className="animate-spin text-ink-400" size={16} aria-hidden="true" />
+                                                </span>
+                                            )}
                                         </div>
-                                        {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
-                                        {shippingError && <p className="text-red-500 text-xs mt-1">{shippingError}</p>}
+                                        <FieldError id="checkout-pincode-error" message={errors.pincode} />
+                                        <FieldError id="checkout-pincode-shipping-error" message={shippingError} />
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">City *</label>
+                                        <label htmlFor="checkout-city" className="field-label">City<RequiredMark /></label>
                                         <input
+                                            id="checkout-city"
                                             type="text"
                                             value={checkoutForm.city}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, city: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.city ? 'border-red-300' : ''}`}
+                                            className={fieldClass('city')}
+                                            autoComplete="address-level2"
+                                            {...invalidProps('city', 'checkout-city')}
                                             required
                                         />
-                                        {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+                                        <FieldError id="checkout-city-error" message={errors.city} />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">State *</label>
+                                        <label htmlFor="checkout-state" className="field-label">State<RequiredMark /></label>
                                         <input
+                                            id="checkout-state"
                                             type="text"
                                             value={checkoutForm.state}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, state: e.target.value })}
-                                            className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.state ? 'border-red-300' : ''}`}
+                                            className={fieldClass('state')}
+                                            autoComplete="address-level1"
+                                            {...invalidProps('state', 'checkout-state')}
                                             required
                                         />
-                                        {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
+                                        <FieldError id="checkout-state-error" message={errors.state} />
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-slate-600 mb-1">Order Notes</label>
+                                        <label htmlFor="checkout-notes" className="field-label">Order notes</label>
                                         <textarea
+                                            id="checkout-notes"
                                             value={checkoutForm.notes}
                                             onChange={(e) => setCheckoutForm({ ...checkoutForm, notes: e.target.value })}
-                                            className="w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 h-20"
+                                            className={fieldClass('notes', ' h-24')}
                                             placeholder="Notes about your order, e.g. special instructions for delivery"
+                                            {...invalidProps('notes', 'checkout-notes')}
                                         />
+                                        <FieldError id="checkout-notes-error" message={errors.notes} />
                                     </div>
                                 </div>
                             </div>
 
                             {/* Payment details */}
-                            <div className="card p-6 bg-white border border-slate-100 space-y-6">
-                                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b pb-3">
-                                    <CreditCard size={20} className="text-teal-700" /> Payment Method
+                            <div className="card space-y-6 p-6 sm:p-8">
+                                <h2 id="checkout-payment-heading" className="flex items-center gap-3 border-b border-ink-900/[0.06] pb-4 font-display text-xl font-normal text-ink-950">
+                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                        <CreditCard size={18} aria-hidden="true" />
+                                    </span>
+                                    Payment method
                                 </h2>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label className={`border p-4 rounded-xl cursor-pointer flex items-start gap-3 hover:bg-slate-50 transition ${checkoutForm.payment_method === 'cod' ? 'border-teal-600 bg-teal-50/10' : 'border-slate-200'}`}>
-                                        <input 
-                                            type="radio" 
+                                <div role="radiogroup" aria-labelledby="checkout-payment-heading" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${checkoutForm.payment_method === 'cod' ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600' : 'border-ink-900/10 bg-white hover:border-ink-900/25'}`}>
+                                        <input
+                                            type="radio"
                                             name="payment_method"
-                                            checked={checkoutForm.payment_method === 'cod'} 
-                                            onChange={() => setCheckoutForm({ ...checkoutForm, payment_method: 'cod' })} 
-                                            className="mt-0.5 text-teal-600 focus:ring-teal-500" 
+                                            checked={checkoutForm.payment_method === 'cod'}
+                                            onChange={() => setCheckoutForm({ ...checkoutForm, payment_method: 'cod' })}
+                                            className="mt-0.5 rounded-full border-ink-900/50 text-brand-700 focus:ring-brand-500"
                                         />
                                         <div>
-                                            <div className="font-bold text-slate-850 text-sm">Cash on Delivery</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">Pay with cash upon delivery.</div>
+                                            <div className="text-sm font-semibold text-ink-900">Cash on delivery</div>
+                                            <div className="mt-0.5 text-xs text-ink-500">Pay with cash upon delivery.</div>
                                         </div>
                                     </label>
-                                    <label className={`border p-4 rounded-xl cursor-pointer flex items-start gap-3 hover:bg-slate-50 transition ${checkoutForm.payment_method === 'online' ? 'border-teal-600 bg-teal-50/10' : 'border-slate-200'}`}>
-                                        <input 
-                                            type="radio" 
+                                    <label className={`flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition ${checkoutForm.payment_method === 'online' ? 'border-brand-600 bg-brand-50 ring-1 ring-brand-600' : 'border-ink-900/10 bg-white hover:border-ink-900/25'}`}>
+                                        <input
+                                            type="radio"
                                             name="payment_method"
-                                            checked={checkoutForm.payment_method === 'online'} 
-                                            onChange={() => setCheckoutForm({ ...checkoutForm, payment_method: 'online' })} 
-                                            className="mt-0.5 text-teal-600 focus:ring-teal-500" 
+                                            checked={checkoutForm.payment_method === 'online'}
+                                            onChange={() => setCheckoutForm({ ...checkoutForm, payment_method: 'online' })}
+                                            className="mt-0.5 rounded-full border-ink-900/50 text-brand-700 focus:ring-brand-500"
                                         />
                                         <div>
-                                            <div className="font-bold text-slate-850 text-sm">Pay Online (UPI)</div>
-                                            <div className="text-xs text-slate-500 mt-0.5">Instant secure payment via UPI code.</div>
+                                            <div className="text-sm font-semibold text-ink-900">Pay online (UPI)</div>
+                                            <div className="mt-0.5 text-xs text-ink-500">Instant secure payment via UPI code.</div>
                                         </div>
                                     </label>
                                 </div>
 
                                 {checkoutForm.payment_method === 'online' && (
-                                    <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-4 animate-fade-in text-sm">
+                                    <div className="animate-fade-in space-y-4 rounded-2xl border border-ink-900/[0.06] bg-sand-100 p-5 text-sm">
                                         {paymentSettings ? (
-                                            <div className="flex flex-col md:flex-row gap-5 items-center">
+                                            <div className="flex flex-col items-center gap-5 md:flex-row">
                                                 {paymentSettings.qr_code_image && (
-                                                    <div className="w-32 h-32 bg-white border p-1 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                                                    <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-xl border border-ink-900/[0.06] bg-white p-1 shadow-sm">
                                                         <img src={paymentSettings.qr_code_image} alt="UPI QR Code" className="max-h-full object-contain" />
                                                     </div>
                                                 )}
                                                 <div className="space-y-2">
-                                                    <p className="font-bold text-slate-800">Scan & Pay using any UPI app:</p>
-                                                    <p className="text-xs text-slate-500 leading-relaxed">
+                                                    <p className="font-semibold text-ink-900">Scan &amp; pay using any UPI app:</p>
+                                                    <p className="text-xs leading-relaxed text-ink-500">
                                                         Scan the QR code or send payment to the UPI ID below. Once completed, enter the 12-digit transaction ID below to verify your payment.
                                                     </p>
                                                     {paymentSettings.upi_id && (
-                                                        <div className="mt-1 bg-teal-50 text-teal-800 px-3 py-1 border border-teal-100 rounded-lg font-mono font-bold select-all w-fit text-sm">
+                                                        <div className="mt-1 w-fit max-w-full select-all break-all rounded-xl bg-white px-3 py-2 text-sm font-medium tabular-nums text-ink-900 ring-1 ring-ink-900/10">
                                                             UPI ID: {paymentSettings.upi_id}
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p className="text-slate-400 italic">No UPI config loaded.</p>
+                                            <p className="italic text-ink-500">No UPI config loaded.</p>
                                         )}
 
                                         <div className="pt-2">
-                                            <label className="block text-xs font-bold text-slate-700 mb-1">Transaction ID / UPI Ref Number *</label>
+                                            <label htmlFor="checkout-txn" className="field-label">Transaction ID / UPI ref number<RequiredMark /></label>
                                             <input
+                                                id="checkout-txn"
                                                 type="text"
                                                 value={checkoutForm.transaction_id}
                                                 onChange={(e) => setCheckoutForm({ ...checkoutForm, transaction_id: e.target.value })}
-                                                className={`w-full rounded-xl border-slate-200 text-sm py-2.5 px-3.5 focus:border-teal-500 focus:ring-teal-500 ${errors.transaction_id ? 'border-red-300' : ''}`}
+                                                className={fieldClass('transaction_id')}
                                                 placeholder="Enter 12-digit transaction reference number"
+                                                autoComplete="off"
+                                                {...invalidProps('transaction_id', 'checkout-txn')}
                                                 required
                                             />
-                                            {errors.transaction_id && <p className="text-red-500 text-xs mt-1">{errors.transaction_id}</p>}
+                                            <FieldError id="checkout-txn-error" message={errors.transaction_id} />
                                         </div>
                                     </div>
                                 )}
@@ -296,46 +378,50 @@ export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings
                         </form>
 
                         {/* Right Column: Order Summary */}
-                        <div className="lg:col-span-5 space-y-6">
-                            <div className="card p-6 bg-white border border-slate-100 space-y-6">
-                                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 border-b pb-3">
-                                    <ShoppingCart size={20} className="text-teal-700" /> Order Summary
+                        <div className="space-y-6 lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:col-span-5">
+                            <div className="card space-y-6 p-6 sm:p-8">
+                                <h2 className="flex items-center gap-3 border-b border-ink-900/[0.06] pb-4 font-display text-xl font-normal text-ink-950">
+                                    <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                        <ShoppingCart size={18} aria-hidden="true" />
+                                    </span>
+                                    Order summary
                                 </h2>
 
                                 {/* Cart Items */}
-                                <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto pr-1">
+                                <div className="max-h-72 divide-y divide-ink-900/[0.06] overflow-y-auto pr-1">
                                     {cartItems.map((item) => (
-                                        <div key={item.id} className="py-3.5 flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className="w-12 h-12 bg-slate-50 border rounded-lg p-0.5 flex items-center justify-center flex-shrink-0">
-                                                    <img src={item.product.image_url} alt={item.product.name} className="max-h-full max-w-full object-contain" />
+                                        <div key={item.id} className="flex items-center justify-between gap-4 py-3.5">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <div className="product-stage h-14 w-14 shrink-0 rounded-2xl">
+                                                    {/* The name is printed beside the thumbnail, so the image is decorative here. */}
+                                                    <img src={item.product.image_url} alt="" className="h-11 w-11 object-contain" />
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <h4 className="text-xs font-bold text-slate-800 truncate">{item.product.name}</h4>
-                                                    <span className="text-slate-550 text-xs">Qty: {item.quantity}</span>
+                                                    <p className="truncate text-sm font-semibold text-ink-900">{item.product.name}</p>
+                                                    <span className="text-xs text-ink-500">Qty: {item.quantity}</span>
                                                 </div>
                                             </div>
-                                            <span className="font-bold text-slate-800 text-sm">₹{Number(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                            <span className="shrink-0 text-sm font-medium tabular-nums text-ink-900">₹{Number(item.price * item.quantity).toLocaleString('en-IN')}</span>
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Order Calculation */}
-                                <div className="space-y-3 pt-3 border-t text-sm text-slate-600">
-                                    <div className="flex justify-between">
+                                <div className="space-y-3 border-t border-ink-900/[0.06] pt-4 text-sm text-ink-700">
+                                    <div className="flex justify-between gap-4">
                                         <span>Subtotal</span>
-                                        <span className="font-bold text-slate-800">₹{Number(subtotal).toLocaleString('en-IN')}</span>
+                                        <span className="font-medium tabular-nums text-ink-900">₹{Number(subtotal).toLocaleString('en-IN')}</span>
                                     </div>
-                                    <div className="flex justify-between">
-                                        <span>Shipping & Handling</span>
-                                        <span className="font-bold text-slate-800">
-                                            {shippingCharge !== null ? `₹${shippingCharge}` : loadingShipping ? 'Calculating...' : 'Enter pincode'}
+                                    <div className="flex justify-between gap-4">
+                                        <span>Shipping &amp; handling</span>
+                                        <span className="font-medium tabular-nums text-ink-900">
+                                            {shippingCharge !== null ? `₹${shippingCharge.toLocaleString('en-IN')}` : loadingShipping ? 'Calculating…' : 'Enter pincode'}
                                         </span>
                                     </div>
-                                    <hr className="border-slate-100 my-2" />
-                                    <div className="flex justify-between items-baseline pt-2">
-                                        <span className="font-bold text-slate-800 text-base">Grand Total</span>
-                                        <span className="text-2xl font-black text-teal-700">₹{Number(grandTotal).toLocaleString('en-IN')}</span>
+                                    <hr className="my-2 border-ink-900/[0.06]" />
+                                    <div className="flex items-baseline justify-between gap-4 pt-2">
+                                        <span className="text-base font-semibold text-ink-950">Grand total</span>
+                                        <span className="font-display text-3xl tabular-nums text-ink-950">₹{Number(grandTotal).toLocaleString('en-IN')}</span>
                                     </div>
                                 </div>
 
@@ -343,21 +429,26 @@ export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings
                                     type="button"
                                     onClick={handleCheckoutSubmit}
                                     disabled={submittingOrder || shippingCharge === null}
-                                    className="btn-primary w-full py-4 text-center justify-center font-bold flex items-center gap-2 disabled:opacity-50"
+                                    className="btn-primary w-full gap-2 !py-4 disabled:bg-ink-100 disabled:text-ink-500 disabled:shadow-none disabled:opacity-100"
                                 >
                                     {submittingOrder ? (
                                         <>
-                                            <Loader2 size={18} className="animate-spin" /> Submitting...
+                                            <Loader2 size={18} className="animate-spin" aria-hidden="true" /> Submitting…
                                         </>
                                     ) : (
                                         <>
-                                            Confirm Order <CheckCircle size={18} />
+                                            Confirm order <CheckCircle size={18} aria-hidden="true" />
                                         </>
                                     )}
                                 </button>
+                                {hasErrors && (
+                                    <p role="alert" className="field-error justify-center text-center">
+                                        <AlertCircle size={13} className="shrink-0" aria-hidden="true" /> Please check the highlighted fields.
+                                    </p>
+                                )}
                                 {shippingCharge === null && (
-                                    <p className="text-xs text-center text-red-500 flex items-center justify-center gap-1">
-                                        <AlertCircle size={14} /> Enter a valid 6-digit delivery pincode to proceed.
+                                    <p className="flex items-center justify-center gap-1.5 text-center text-xs text-ink-500">
+                                        <Info size={14} aria-hidden="true" /> Enter a valid 6-digit delivery pincode to proceed.
                                     </p>
                                 )}
                             </div>

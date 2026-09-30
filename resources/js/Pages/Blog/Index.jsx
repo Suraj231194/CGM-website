@@ -14,16 +14,19 @@ export default function Index({ posts = [] }) {
     const categories = ['all', ...new Set(posts.map((p) => p.category))];
     const filtered = filter === 'all' ? posts : posts.filter((p) => p.category === filter);
     const [featured, ...rest] = filtered;
+    // Alternate the cover mirror within each category so neighbouring posts do not repeat.
+    const counts = {};
+    const variantOf = Object.fromEntries(filtered.map((p) => [p.id, (counts[p.category] = (counts[p.category] ?? -1) + 1)]));
 
     return (
         <MainLayout>
-            <Head title="Learning Center" />
+            <Head title="Learning center" />
 
             <PageHero
                 eyebrow="Learning center"
-                title="Learning Center"
+                title="Expert guidance, medically reviewed."
                 subtitle="Expert-written, medically-reviewed articles to help you understand diabetes management technology and live your best life."
-                breadcrumbs={[{ label: 'Learning Center' }]}
+                breadcrumbs={[{ label: 'Learning center' }]}
             />
 
             <section className="container-page section-pad">
@@ -35,9 +38,9 @@ export default function Index({ posts = [] }) {
                             type="button"
                             onClick={() => setFilter(cat)}
                             aria-pressed={filter === cat}
-                            className={`rounded-full px-5 py-2.5 text-sm font-medium transition duration-300 ${filter === cat ? 'bg-ink-950 text-white shadow-soft' : 'border border-ink-900/10 bg-white text-ink-600 hover:border-brand-600 hover:text-brand-700'}`}
+                            className={`rounded-full px-5 py-2.5 text-sm font-medium transition duration-300 ${filter === cat ? 'bg-brand-800 text-white shadow-soft' : 'border border-ink-900/10 bg-white text-ink-600 hover:border-brand-600 hover:text-brand-700'}`}
                         >
-                            {cat === 'all' ? 'All Articles' : cat}
+                            {cat === 'all' ? 'All articles' : cat}
                         </button>
                     ))}
                 </div>
@@ -47,11 +50,11 @@ export default function Index({ posts = [] }) {
                     <Reveal>
                         <Link href={`/blog/${featured.slug}`} className="group grid overflow-hidden rounded-5xl border border-ink-900/[0.06] bg-white transition duration-500 ease-premium hover:shadow-lift lg:grid-cols-[1.2fr_1fr]">
                             <div className="aspect-[16/10] overflow-hidden lg:aspect-auto">
-                                <BlogCover category={featured.category} eager className="transition-transform duration-700 ease-premium group-hover:scale-[1.03]" />
+                                <BlogCover category={featured.category} variant={variantOf[featured.id]} eager className="transition-transform duration-700 ease-premium group-hover:scale-[1.03]" />
                             </div>
                             <div className="flex flex-col justify-center p-8 sm:p-12">
-                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">Featured · {featured.category}</p>
-                                <h2 className="mt-4 text-balance font-display text-3xl leading-tight text-ink-950 transition-colors group-hover:text-brand-700 md:text-4xl">{featured.title}</h2>
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">Featured · {featured.category}</p>
+                                <h2 className="mt-4 text-balance font-display text-display-xs text-ink-950 transition-colors group-hover:text-brand-700 xl:text-display-sm">{featured.title}</h2>
                                 <p className="mt-4 line-clamp-3 text-lg leading-relaxed text-ink-500">{featured.excerpt}</p>
                                 <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
                                     <span className="font-medium text-ink-700">{featured.author}</span>
@@ -73,12 +76,12 @@ export default function Index({ posts = [] }) {
                             <Reveal key={post.id} delay={(i % 3) * 100}>
                                 <Link href={`/blog/${post.slug}`} className="group block">
                                     <div className="aspect-[16/10] overflow-hidden rounded-4xl">
-                                        <BlogCover category={post.category} className="transition-transform duration-700 ease-premium group-hover:scale-105" />
+                                        <BlogCover category={post.category} variant={variantOf[post.id]} className="transition-transform duration-700 ease-premium group-hover:scale-105" />
                                     </div>
-                                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">{post.category}</p>
-                                    <h3 className="mt-2 line-clamp-2 text-xl font-semibold leading-snug tracking-tight text-ink-950 transition-colors group-hover:text-brand-700">
+                                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">{post.category}</p>
+                                    <h2 className="mt-2 line-clamp-2 text-xl font-semibold leading-snug tracking-tight text-ink-950 transition-colors group-hover:text-brand-700">
                                         {post.title}
-                                    </h3>
+                                    </h2>
                                     <p className="mt-2 line-clamp-3 text-[0.9375rem] leading-relaxed text-ink-500">{post.excerpt}</p>
                                     <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-400">
                                         <span className="font-medium text-ink-600">{post.author}</span>

@@ -3,12 +3,13 @@ import MainLayout from '@/Layouts/MainLayout';
 import ContactForm from '@/Components/ContactForm';
 import PageHero from '@/Components/PageHero';
 import Reveal from '@/Components/Reveal';
+import { SUPPORT_EMAIL, SUPPORT_PHONE } from '@/lib/brand';
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 
 const contactMethods = [
-    { icon: Phone, label: 'Phone', value: '1-800-BIOGENIXCGM-1', href: 'tel:1-800-BIOGENIXCGM-1' },
-    { icon: Mail, label: 'Email', value: 'support@biogenixcgm.com', href: 'mailto:support@biogenixcgm.com' },
-    { icon: Clock, label: 'Support Hours', value: '24/7 — Phone, Email & In-App Chat' },
+    { icon: Phone, label: 'Phone', value: SUPPORT_PHONE.display, href: SUPPORT_PHONE.href },
+    { icon: Mail, label: 'Email', value: SUPPORT_EMAIL.display, href: SUPPORT_EMAIL.href },
+    { icon: Clock, label: 'Support hours', value: '24/7 — Phone, Email & In-App Chat' },
 ];
 
 export default function Contact({ products = [] }) {
@@ -18,18 +19,18 @@ export default function Contact({ products = [] }) {
 
             <PageHero
                 eyebrow="Contact"
-                title="Get In Touch"
+                title="Get in touch"
                 subtitle="Have questions about our products or need support? Fill out the form below and our team will respond within 24 hours."
                 breadcrumbs={[{ label: 'Contact' }]}
             />
 
             {/* Contact Content */}
             <section className="container-page section-pad">
-                <div className="grid gap-8 lg:grid-cols-5 lg:gap-12">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-12">
                     {/* Form */}
                     <Reveal className="lg:col-span-3">
                         <div className="rounded-5xl bg-white p-6 shadow-soft ring-1 ring-ink-900/[0.05] sm:p-10">
-                            <h2 className="font-display text-3xl text-ink-950">Send Us a Message</h2>
+                            <h2 className="font-display text-display-xs text-ink-950">Send us a message</h2>
                             <p className="mb-8 mt-2 text-ink-500">Tell us a little about yourself and we&rsquo;ll route you to the right specialist.</p>
                             <ContactForm products={products} sourcePage="/contact" />
                         </div>
@@ -37,20 +38,20 @@ export default function Contact({ products = [] }) {
 
                     {/* Contact Info */}
                     <div className="space-y-6 lg:col-span-2">
-                        <Reveal delay={100} className="rounded-5xl bg-ink-950 p-8 text-white sm:p-10">
-                            <h2 className="font-display text-2xl">Contact Information</h2>
+                        <Reveal delay={100} className="bg-radiance grain relative overflow-hidden rounded-5xl p-8 text-white sm:p-10">
+                            <h2 className="font-display text-2xl">Contact information</h2>
                             <ul className="mt-8 space-y-6">
                                 {contactMethods.map((m) => (
                                     <li key={m.label} className="flex items-start gap-4">
                                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-glow ring-1 ring-white/10">
                                             <m.icon size={19} aria-hidden="true" />
                                         </span>
-                                        <span>
-                                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-white/50">{m.label}</span>
+                                        <span className="min-w-0">
+                                            <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-white/65">{m.label}</span>
                                             {m.href ? (
-                                                <a href={m.href} className="mt-1 block text-[0.9375rem] text-white transition-colors hover:text-glow">{m.value}</a>
+                                                <a href={m.href} className="mt-1 block text-[0.9375rem] text-white transition-colors [overflow-wrap:anywhere] hover:text-glow">{m.value}</a>
                                             ) : (
-                                                <span className="mt-1 block text-[0.9375rem] text-white">{m.value}</span>
+                                                <span className="mt-1 block text-[0.9375rem] text-white [overflow-wrap:anywhere]">{m.value}</span>
                                             )}
                                         </span>
                                     </li>

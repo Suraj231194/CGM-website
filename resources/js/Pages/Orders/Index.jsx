@@ -1,97 +1,62 @@
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import { Package, Calendar, Eye, ArrowRight, ClipboardCheck } from 'lucide-react';
+import StatusBadge, { PAYMENT_METHOD_LABELS } from '@/Components/StatusBadge';
+import { formatDate, formatPrice } from '@/lib/format';
+import { Package, Calendar, Eye, ArrowRight } from 'lucide-react';
 
 export default function Index({ orders }) {
-    const getStatusStyle = (status) => {
-        const styles = {
-            placed: 'bg-blue-50 text-blue-700 border-blue-100',
-            confirmed: 'bg-yellow-50 text-yellow-700 border-yellow-100',
-            shipped: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-            delivered: 'bg-green-50 text-green-700 border-green-100',
-            cancelled: 'bg-red-50 text-red-700 border-red-100',
-        };
-        return styles[status] || 'bg-slate-50 text-slate-700 border-slate-100';
-    };
-
-    const getPaymentStatusStyle = (status) => {
-        const styles = {
-            pending: 'bg-amber-50 text-amber-700',
-            pending_verification: 'bg-orange-50 text-orange-700',
-            paid: 'bg-emerald-50 text-emerald-700',
-            failed: 'bg-rose-50 text-rose-700',
-        };
-        return styles[status] || 'bg-slate-50 text-slate-700';
-    };
-
-    const paymentStatusLabels = {
-        pending: 'Pending',
-        pending_verification: 'Verifying',
-        paid: 'Paid',
-        failed: 'Failed',
-    };
-
     return (
         <MainLayout>
-            <Head title="Order History — BiogenixCGM" />
-            <section className="max-w-6xl mx-auto px-4 py-12">
-                <h1 className="text-3xl font-extrabold text-slate-800 mb-8 flex items-center gap-3">
-                    <ClipboardCheck size={32} className="text-teal-700" /> Order History
-                </h1>
+            <Head title="Order history" />
+            <section className="container-page pb-20 pt-10 md:pt-14">
+                <header className="mb-10">
+                    <p className="eyebrow">Your account</p>
+                    <h1 className="mt-3 section-heading">Order history</h1>
+                </header>
 
                 {orders.length === 0 ? (
-                    <div className="card p-12 text-center max-w-xl mx-auto">
-                        <Package size={56} className="text-slate-300 mx-auto mb-4" />
-                        <h2 className="text-xl font-bold text-slate-700 mb-2">No orders found</h2>
-                        <p className="text-slate-500 mb-6">You haven't placed any orders yet. Explore our products to make your first purchase!</p>
-                        <Link href="/products" className="btn-primary">Browse Products <ArrowRight size={16} className="ml-1.5" /></Link>
+                    <div className="card mx-auto max-w-xl px-6 py-12 text-center sm:p-12">
+                        <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-700">
+                            <Package size={32} aria-hidden="true" />
+                        </div>
+                        <h2 className="mb-2 text-xl font-bold text-ink-700">No orders found</h2>
+                        <p className="mb-6 text-ink-500">You haven't placed any orders yet. Explore our products to make your first purchase!</p>
+                        <Link href="/products" className="btn-primary gap-1.5">Browse Products <ArrowRight size={16} aria-hidden="true" /></Link>
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {orders.map((order) => {
-                            const date = new Date(order.created_at).toLocaleDateString('en-IN', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                            });
-
-                            return (
-                                <div key={order.id} className="card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-teal-100 border border-transparent transition">
-                                    <div className="space-y-2">
-                                        <div className="flex items-center gap-3 flex-wrap">
-                                            <span className="font-bold text-slate-800 font-mono text-base">#{order.order_number}</span>
-                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusStyle(order.status)} uppercase tracking-wider`}>
-                                                {order.status}
-                                            </span>
-                                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${getPaymentStatusStyle(order.payment_status)}`}>
-                                                Payment: {paymentStatusLabels[order.payment_status]}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
-                                            <span className="flex items-center gap-1.5"><Calendar size={14} /> {date}</span>
-                                            <span>•</span>
-                                            <span>{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
-                                            <span>•</span>
-                                            <span className="font-semibold text-slate-700 uppercase">{order.payment_method}</span>
-                                        </div>
+                        {orders.map((order) => (
+                            <div key={order.id} className="card flex flex-col justify-between gap-6 p-6 hover:border-brand-600/20 md:flex-row md:items-center">
+                                <div className="min-w-0 space-y-2">
+                                    <div className="flex flex-wrap items-center gap-3">
+                                        <span className="text-base font-semibold tracking-tight tabular-nums text-ink-900">#{order.order_number}</span>
+                                        <StatusBadge kind="order" value={order.status} />
+                                        <StatusBadge kind="payment" value={order.payment_status} />
                                     </div>
-
-                                    <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                                        <div className="text-right">
-                                            <div className="text-xs text-slate-400 font-medium">Order Total</div>
-                                            <div className="text-xl font-bold text-teal-700">₹{Number(order.total).toLocaleString('en-IN')}</div>
-                                        </div>
-
-                                        <Link
-                                            href={`/orders/${order.id}`}
-                                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 hover:text-teal-800 transition"
-                                        >
-                                            View Details <Eye size={16} />
-                                        </Link>
+                                    <div className="flex flex-wrap items-center gap-4 text-sm text-ink-500">
+                                        <span className="flex items-center gap-1.5"><Calendar size={14} aria-hidden="true" /> {formatDate(order.created_at)}</span>
+                                        <span aria-hidden="true">•</span>
+                                        <span>{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
+                                        <span aria-hidden="true">•</span>
+                                        <span className="font-semibold text-ink-700">{PAYMENT_METHOD_LABELS[order.payment_method] ?? order.payment_method}</span>
                                     </div>
                                 </div>
-                            );
-                        })}
+
+                                <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-ink-900/[0.06] pt-4 md:justify-end md:border-t-0 md:pt-0">
+                                    <div className="text-left md:text-right">
+                                        <div className="text-xs font-medium text-ink-500">Order Total</div>
+                                        <div className="font-display text-2xl tabular-nums text-ink-950">{formatPrice(order.total)}</div>
+                                    </div>
+
+                                    <Link
+                                        href={`/orders/${order.id}`}
+                                        className="link-arrow"
+                                    >
+                                        View Details <Eye size={16} aria-hidden="true" />
+                                    </Link>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
             </section>

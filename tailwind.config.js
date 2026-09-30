@@ -8,6 +8,10 @@ import forms from '@tailwindcss/forms';
  * photography and the interface read as one system. `ink` is the deep near-black used
  * for text and dark sections, and `canvas`/`sand` are the warm neutrals behind them.
  *
+ * The 750 and 850 steps give hover and gradient states a finer step between the deep
+ * shades. ink-400 is the lightest tone allowed for text on light surfaces (AA on white,
+ * canvas, sand-50 and brand-50); ink-300 is for decorative, aria-hidden marks only.
+ *
  * `teal` is aliased to `brand` on purpose: the checkout, account and admin screens use
  * `teal-*` utilities directly, and the alias moves all of them onto the new brand colour
  * without touching each call site. New code should use `brand-*`.
@@ -21,7 +25,9 @@ const brand = {
     500: '#2f8683',
     600: '#236d6c',
     700: '#1d5859',
+    750: '#1c5051',
     800: '#1a4849',
+    850: '#184243',
     900: '#173c3d',
     950: '#0a2425',
 };
@@ -45,7 +51,7 @@ export default {
                     100: '#e3e9ea',
                     200: '#c7d2d4',
                     300: '#9fb0b3',
-                    400: '#728689',
+                    400: '#607477',
                     500: '#56696c',
                     600: '#435457',
                     700: '#344447',
@@ -67,10 +73,12 @@ export default {
                 display: ['Fraunces', 'Georgia', ...defaultTheme.fontFamily.serif],
             },
             fontSize: {
+                'display-xs': ['1.875rem', { lineHeight: '1.15', letterSpacing: '-0.015em' }],
                 'display-sm': ['2.25rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
                 'display-md': ['3rem', { lineHeight: '1.05', letterSpacing: '-0.025em' }],
                 'display-lg': ['3.75rem', { lineHeight: '1.02', letterSpacing: '-0.03em' }],
                 'display-xl': ['4.5rem', { lineHeight: '1', letterSpacing: '-0.035em' }],
+                'display-2xl': ['5.25rem', { lineHeight: '0.98', letterSpacing: '-0.03em' }],
             },
             borderRadius: {
                 '4xl': '2rem',
@@ -79,7 +87,9 @@ export default {
             boxShadow: {
                 soft: '0 1px 2px rgba(7, 22, 25, 0.04), 0 8px 24px -12px rgba(7, 22, 25, 0.12)',
                 lift: '0 2px 4px rgba(7, 22, 25, 0.04), 0 24px 48px -20px rgba(7, 22, 25, 0.22)',
-                glow: '0 0 0 1px rgba(125, 227, 211, 0.25), 0 20px 60px -20px rgba(125, 227, 211, 0.45)',
+                glow: '0 0 0 1px rgba(255, 255, 255, 0.08), 0 24px 60px -24px rgba(47, 134, 131, 0.55)',
+                primary: 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 1px 2px rgba(7, 22, 25, 0.10), 0 10px 24px -12px rgba(26, 72, 73, 0.55)',
+                'primary-lift': 'inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 4px rgba(7, 22, 25, 0.06), 0 20px 40px -16px rgba(26, 72, 73, 0.6)',
                 inset: 'inset 0 1px 0 rgba(255, 255, 255, 0.6)',
             },
             maxWidth: {
@@ -107,10 +117,11 @@ export default {
                 },
             },
             animation: {
-                float: 'float 7s ease-in-out infinite',
-                'float-slow': 'float 9s ease-in-out infinite',
+                // Decorative motion plays once and settles (no loop runs past 5s).
+                float: 'float 4.8s ease-in-out 1',
+                'float-slow': 'float 4.8s ease-in-out 1',
                 draw: 'draw 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards',
-                'pulse-ring': 'pulse-ring 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite',
+                'pulse-ring': 'pulse-ring 2.4s cubic-bezier(0.22, 1, 0.36, 1) 2 forwards',
             },
         },
     },

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\GuestCart;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,9 +30,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Signing in migrates the session to a new id, so note the guest's
+        // id first to carry their cart across.
+        $guestSessionId = $request->session()->getId();
+
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        GuestCart::mergeInto($guestSessionId, $request->user());
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

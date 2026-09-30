@@ -5,8 +5,11 @@ const formatPrice = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
 
 export default function ProductCard({ product }) {
     const { post, processing } = useForm({ product_id: product.id, quantity: 1 });
-    const onSale = product.sale_price && product.sale_price > 0;
-    const effectivePrice = onSale ? product.sale_price : product.price;
+    // The cart charges the sale price whenever one is set; the old price is struck only when it is a real saving.
+    const hasSalePrice = Number(product.sale_price) > 0;
+    const effectivePrice = hasSalePrice ? product.sale_price : product.price;
+    const saving = hasSalePrice ? Number(product.price) - Number(product.sale_price) : 0;
+    const onSale = saving > 0;
 
     const handleAddToCart = (e) => {
         e.preventDefault();
@@ -15,7 +18,7 @@ export default function ProductCard({ product }) {
     };
 
     return (
-        <article className="card card-interactive group relative flex h-full flex-col">
+        <article className="card card-interactive group relative flex h-full flex-col has-[a:focus-visible]:ring-2 has-[a:focus-visible]:ring-brand-500 has-[a:focus-visible]:ring-offset-2 has-[a:focus-visible]:ring-offset-canvas">
             <div className="product-stage aspect-[4/3]">
                 {product.image_url ? (
                     <img
@@ -25,7 +28,7 @@ export default function ProductCard({ product }) {
                         decoding="async"
                         width="1024"
                         height="1024"
-                        className="h-[82%] w-auto object-contain transition-transform duration-700 ease-premium group-hover:scale-[1.06]"
+                        className="h-[82%] w-auto object-contain scale-[1.4] transition-transform duration-700 ease-premium group-hover:scale-[1.46]"
                     />
                 ) : (
                     <span className="flex h-24 w-24 items-center justify-center rounded-full bg-brand-100 font-display text-4xl text-brand-700">
@@ -33,8 +36,8 @@ export default function ProductCard({ product }) {
                     </span>
                 )}
                 {onSale && (
-                    <span className="absolute left-4 top-4 rounded-full bg-ink-950 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
-                        Offer
+                    <span className="absolute left-4 top-4 rounded-full bg-brand-800 px-3 py-1 text-xs font-semibold text-white">
+                        Save {formatPrice(saving)}
                     </span>
                 )}
             </div>
@@ -62,8 +65,16 @@ export default function ProductCard({ product }) {
 
                 <div className="mt-auto flex items-end justify-between gap-4 pt-6">
                     <p className="flex items-baseline gap-2">
-                        <span className="text-lg font-semibold text-ink-950">{formatPrice(effectivePrice)}</span>
-                        {onSale && <span className="text-sm text-ink-300 line-through">{formatPrice(product.price)}</span>}
+                        <span className="text-lg font-semibold text-ink-950">
+                            {onSale && <span className="sr-only">Sale price </span>}
+                            {formatPrice(effectivePrice)}
+                        </span>
+                        {onSale && (
+                            <del className="text-sm text-ink-400">
+                                <span className="sr-only">Original price </span>
+                                {formatPrice(product.price)}
+                            </del>
+                        )}
                     </p>
                     <span className="link-arrow" aria-hidden="true">
                         Discover <ArrowRight size={16} />

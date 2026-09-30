@@ -45,7 +45,7 @@ export default function AdminLayout({ children }) {
                 <div className="h-16 flex items-center gap-3 px-6 bg-slate-950 border-b border-slate-800">
                     <Activity className="text-teal-400" size={24} />
                     <div>
-                        <span className="font-extrabold text-white text-sm tracking-wide">BiogenixCGM</span>
+                        <span className="font-extrabold text-white text-sm tracking-wide">biogenixCGM</span>
                         <span className="text-[9px] uppercase tracking-wider text-teal-400 font-bold block mt-[-2px]">Admin Console</span>
                     </div>
                 </div>
@@ -94,7 +94,7 @@ export default function AdminLayout({ children }) {
                 <div className="h-16 flex items-center justify-between px-6 bg-slate-950 border-b border-slate-800">
                     <div className="flex items-center gap-3">
                         <Activity className="text-teal-400" size={22} />
-                        <span className="font-extrabold text-white text-sm">BiogenixCGM</span>
+                        <span className="font-extrabold text-white text-sm">biogenixCGM</span>
                     </div>
                     <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white">
                         <X size={20} />

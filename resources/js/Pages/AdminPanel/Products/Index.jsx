@@ -11,7 +11,7 @@ export default function Index({ products }) {
 
     return (
         <AdminLayout>
-            <Head title="Manage Products — BiogenixCGM" />
+            <Head title="Manage Products" />
 
             <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
@@ -75,7 +75,7 @@ export default function Index({ products }) {
                                             </span>
                                         </td>
                                         <td className="py-4 px-6 text-center">
-                                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${product.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-150'}`}>
+                                            <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full border ${product.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-slate-50 text-slate-500 border-slate-200'}`}>
                                                 {product.status === 'active' ? (
                                                     <>
                                                         <BadgeCheck size={12} /> Active

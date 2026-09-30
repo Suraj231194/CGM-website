@@ -26,7 +26,7 @@ export default function Resources({ resources = [] }) {
 
             <PageHero
                 eyebrow="Resources"
-                title="Resources & Downloads"
+                title="Resources and downloads"
                 subtitle="Access user manuals, quick-start guides, video tutorials, and educational materials for all biogenixCGM products."
                 breadcrumbs={[{ label: 'Resources' }]}
             />
@@ -44,7 +44,7 @@ export default function Resources({ resources = [] }) {
                                     type="button"
                                     onClick={() => setFilter(t)}
                                     aria-pressed={active}
-                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition duration-300 ${active ? 'bg-ink-950 text-white shadow-soft' : 'border border-ink-900/10 bg-white text-ink-600 hover:border-brand-600 hover:text-brand-700'}`}
+                                    className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition duration-300 ${active ? 'bg-brand-800 text-white shadow-soft' : 'border border-ink-900/10 bg-white text-ink-600 hover:border-brand-600 hover:text-brand-700'}`}
                                 >
                                     {t === 'all' ? 'All' : pluralLabels[t] || t}
                                     <span className={`rounded-full px-1.5 text-xs tabular-nums ${active ? 'bg-white/15' : 'bg-sand-100 text-ink-500'}`}>{count}</span>
@@ -58,7 +58,7 @@ export default function Resources({ resources = [] }) {
                 </div>
 
                 {/* Grid */}
-                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
                     {filtered.map((r, i) => {
                         const Icon = typeIcons[r.type] || Download;
                         const href = resourceHref(r);
@@ -78,7 +78,7 @@ export default function Resources({ resources = [] }) {
                                 </span>
                             </>
                         );
-                        const className = 'group flex h-full flex-col rounded-4xl border border-ink-900/[0.06] bg-white p-7 transition duration-500 ease-premium hover:-translate-y-1 hover:border-brand-600/20 hover:shadow-lift';
+                        const className = 'group flex h-full flex-col rounded-3xl border border-ink-900/[0.06] bg-white p-7 transition duration-500 ease-premium hover:-translate-y-1 hover:border-brand-600/20 hover:shadow-lift';
                         return (
                             <Reveal key={r.id} delay={(i % 3) * 90} className="h-full">
                                 {href ? (
@@ -103,7 +103,7 @@ export default function Resources({ resources = [] }) {
                             <LifeBuoy size={22} aria-hidden="true" />
                         </span>
                         <div>
-                            <h2 className="font-display text-3xl text-ink-950">Can&rsquo;t find what you need?</h2>
+                            <h2 className="font-display text-display-xs text-ink-950">Can&rsquo;t find what you need?</h2>
                             <p className="mt-2 text-ink-500">Our support team can send the right document or walk you through it, 24/7.</p>
                         </div>
                     </div>

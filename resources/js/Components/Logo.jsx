@@ -1,14 +1,18 @@
 import { Link } from '@inertiajs/react';
 
-/** The brand mark: the sensor's signature ring, with a live reading at its centre. */
+/**
+ * The brand mark: the sensor's signature ring, with a live reading at its centre.
+ * One colourway on every surface; on dark grounds a faint hairline keeps the tile's edge.
+ */
 export function LogoMark({ className = 'h-9 w-9', tone = 'light' }) {
-    const tile = tone === 'dark' ? '#ffffff' : '#1d5859';
-    const ring = tone === 'dark' ? '#1d5859' : '#ffffff';
-
     return (
         <svg viewBox="0 0 40 40" className={className} aria-hidden="true" focusable="false">
-            <rect width="40" height="40" rx="12" fill={tile} />
-            <circle cx="20" cy="20" r="10.5" fill="none" stroke={ring} strokeWidth="3" opacity="0.95" />
+            {tone === 'dark' ? (
+                <rect x="0.5" y="0.5" width="39" height="39" rx="11.5" fill="#1d5859" stroke="rgba(255,255,255,0.14)" strokeWidth="1" />
+            ) : (
+                <rect width="40" height="40" rx="12" fill="#1d5859" />
+            )}
+            <circle cx="20" cy="20" r="10.5" fill="none" stroke="#ffffff" strokeWidth="3" opacity="0.95" />
             <path
                 d="M11.5 21h4l2-4.5 3 9 2.2-6.5 1.3 2H28.5"
                 fill="none"

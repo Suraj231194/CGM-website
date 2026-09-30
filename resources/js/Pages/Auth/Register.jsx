@@ -59,92 +59,100 @@ export default function Register() {
 
     return (
         <GuestLayout>
-            <Head title="Create Account — BiogenixCGM" />
+            <Head title="Create account" />
 
-            <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold text-slate-800">Create Account</h2>
-                <p className="text-slate-500 text-sm mt-1">Join BiogenixCGM to purchase medical health devices.</p>
+            <div className="mb-8 text-center">
+                <h1 className="font-display text-display-xs font-normal text-ink-950 sm:text-display-sm">Create account</h1>
+                <p className="mt-2 text-sm text-ink-500">Join biogenixCGM to purchase medical health devices.</p>
             </div>
 
             {otpFeedback && (
-                <div className="mb-4 p-3 bg-teal-50 border border-teal-100 rounded-xl text-xs font-semibold text-teal-800 flex items-center gap-2 animate-fade-in">
-                    <CheckCircle2 size={16} className="text-teal-600 flex-shrink-0" />
+                <div role="status" className="mb-6 flex animate-fade-in items-center gap-2 rounded-2xl bg-brand-50 p-4 text-sm font-medium text-brand-800">
+                    <CheckCircle2 size={16} className="shrink-0 text-brand-600" aria-hidden="true" />
                     <span>{otpFeedback}</span>
                 </div>
             )}
 
             {otpError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-150 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2 animate-fade-in">
-                    <AlertCircle size={16} className="text-red-500 flex-shrink-0" />
+                <div role="alert" className="mb-6 flex animate-fade-in items-center gap-2 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
+                    <AlertCircle size={16} className="shrink-0 text-red-600" aria-hidden="true" />
                     <span>{otpError}</span>
                 </div>
             )}
 
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-5">
                 {/* Registration Core Fields */}
-                <div className="space-y-4">
+                <div className="space-y-5">
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                        <label htmlFor="name" className="field-label">Full name</label>
                         <input
                             id="name"
                             type="text"
                             value={data.name}
                             disabled={otpSent || sendingOtp}
                             onChange={(e) => setData('name', e.target.value)}
-                            className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-805 text-sm py-3 px-4 transition disabled:bg-slate-50 disabled:text-slate-400 ${errors.name ? 'border-red-300 focus:ring-red-500' : ''}`}
+                            className={`field disabled:bg-sand-50 disabled:text-ink-400${errors.name ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                            aria-invalid={errors.name ? 'true' : undefined}
+                            aria-describedby={errors.name ? 'name-error' : undefined}
                             autoComplete="name"
                             required
                             placeholder="John Doe"
                         />
-                        <InputError message={errors.name} className="mt-1.5" />
+                        <InputError id="name-error" message={errors.name} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                        <label htmlFor="email" className="field-label">Email address</label>
                         <input
                             id="email"
                             type="email"
                             value={data.email}
                             disabled={otpSent || sendingOtp}
                             onChange={(e) => setData('email', e.target.value)}
-                            className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-805 text-sm py-3 px-4 transition disabled:bg-slate-50 disabled:text-slate-400 ${errors.email ? 'border-red-300 focus:ring-red-500' : ''}`}
+                            className={`field disabled:bg-sand-50 disabled:text-ink-400${errors.email ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                            aria-invalid={errors.email ? 'true' : undefined}
+                            aria-describedby={errors.email ? 'email-error' : undefined}
                             autoComplete="username"
                             required
                             placeholder="yourname@example.com"
                         />
-                        <InputError message={errors.email} className="mt-1.5" />
+                        <InputError id="email-error" message={errors.email} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Password</label>
+                        <label htmlFor="password" className="field-label">Password</label>
                         <input
                             id="password"
                             type="password"
                             value={data.password}
                             disabled={otpSent || sendingOtp}
                             onChange={(e) => setData('password', e.target.value)}
-                            className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-805 text-sm py-3 px-4 transition disabled:bg-slate-50 disabled:text-slate-400 ${errors.password ? 'border-red-300 focus:ring-red-500' : ''}`}
+                            className={`field disabled:bg-sand-50 disabled:text-ink-400${errors.password ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                            aria-invalid={errors.password ? 'true' : undefined}
+                            aria-describedby={errors.password ? 'password-error' : undefined}
                             autoComplete="new-password"
                             required
                             placeholder="Min 8 characters"
                         />
-                        <InputError message={errors.password} className="mt-1.5" />
+                        <InputError id="password-error" message={errors.password} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-1">Confirm Password</label>
+                        <label htmlFor="password_confirmation" className="field-label">Confirm password</label>
                         <input
                             id="password_confirmation"
                             type="password"
                             value={data.password_confirmation}
                             disabled={otpSent || sendingOtp}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-805 text-sm py-3 px-4 transition disabled:bg-slate-50 disabled:text-slate-400 ${errors.password_confirmation ? 'border-red-300 focus:ring-red-500' : ''}`}
+                            className={`field disabled:bg-sand-50 disabled:text-ink-400${errors.password_confirmation ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                            aria-invalid={errors.password_confirmation ? 'true' : undefined}
+                            aria-describedby={errors.password_confirmation ? 'password_confirmation-error' : undefined}
                             autoComplete="new-password"
                             required
                             placeholder="Confirm password"
                         />
-                        <InputError message={errors.password_confirmation} className="mt-1.5" />
+                        <InputError id="password_confirmation-error" message={errors.password_confirmation} />
                     </div>
                 </div>
 
@@ -154,15 +162,15 @@ export default function Register() {
                         type="button"
                         onClick={handleSendOtp}
                         disabled={sendingOtp || !data.name || !data.email || !data.password || !data.password_confirmation}
-                        className="btn-primary w-full text-center flex items-center justify-center gap-2 mt-4 disabled:opacity-50"
+                        className="btn-primary mt-4 w-full gap-2 whitespace-normal text-center"
                     >
                         {sendingOtp ? (
                             <>
-                                <Loader2 size={16} className="animate-spin" /> Sending Verification Code...
+                                <Loader2 size={16} className="shrink-0 animate-spin" aria-hidden="true" /> Sending verification code…
                             </>
                         ) : (
                             <>
-                                Send Verification Code <Send size={16} />
+                                Send verification code <Send size={16} className="shrink-0" aria-hidden="true" />
                             </>
                         )}
                     </button>
@@ -170,53 +178,59 @@ export default function Register() {
 
                 {/* OTP Verification Box */}
                 {otpSent && (
-                    <div className="pt-4 border-t border-slate-100 space-y-4 animate-fade-in">
+                    <div className="animate-fade-in space-y-5 border-t border-ink-900/[0.06] pt-5">
                         <div>
-                            <div className="flex justify-between items-baseline mb-1">
-                                <label className="block text-sm font-semibold text-slate-700">Enter OTP *</label>
+                            <div className="mb-1.5 flex items-baseline justify-between gap-3">
+                                <label htmlFor="otp" className="field-label mb-0">
+                                    Enter OTP<span className="text-ink-400" aria-hidden="true"> *</span>
+                                </label>
                                 <button
                                     type="button"
                                     onClick={handleSendOtp}
                                     disabled={sendingOtp}
-                                    className="text-xs text-teal-700 hover:text-teal-800 font-bold"
+                                    className="-my-2 py-2 text-sm font-semibold text-brand-700 transition hover:text-brand-800 disabled:opacity-60"
                                 >
-                                    Resend Code
+                                    Resend code
                                 </button>
                             </div>
                             <input
                                 id="otp"
                                 type="text"
+                                inputMode="numeric"
+                                autoComplete="one-time-code"
                                 maxLength={6}
                                 value={data.otp}
                                 onChange={(e) => setData('otp', e.target.value)}
-                                className={`w-full text-center tracking-widest text-lg font-bold rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 py-3 px-4 transition ${errors.otp ? 'border-red-300 focus:ring-red-500' : ''}`}
+                                className={`field text-center indent-[0.5em] font-display text-2xl tracking-[0.5em] tabular-nums${errors.otp ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                                aria-invalid={errors.otp ? 'true' : undefined}
+                                aria-describedby={errors.otp ? 'otp-error' : undefined}
                                 placeholder="000000"
                                 required
                             />
-                            <InputError message={errors.otp} className="mt-1.5" />
+                            <InputError id="otp-error" message={errors.otp} />
                         </div>
 
                         <button
                             type="submit"
                             disabled={processing || data.otp.length !== 6}
-                            className="btn-primary w-full text-center flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="btn-primary w-full gap-2 whitespace-normal text-center"
                         >
                             {processing ? (
                                 <>
-                                    <Loader2 size={16} className="animate-spin" /> Registering...
+                                    <Loader2 size={16} className="shrink-0 animate-spin" aria-hidden="true" /> Registering…
                                 </>
                             ) : (
                                 <>
-                                    Verify & Register <UserPlus size={16} />
+                                    Verify &amp; register <UserPlus size={16} className="shrink-0" aria-hidden="true" />
                                 </>
                             )}
                         </button>
                     </div>
                 )}
 
-                <div className="pt-4 text-center border-t border-slate-100 text-sm text-slate-500">
+                <div className="border-t border-ink-900/[0.06] pt-5 text-center text-sm text-ink-500">
                     Already registered?{' '}
-                    <Link href={route('login')} className="text-teal-700 font-bold hover:text-teal-800 transition">
+                    <Link href={route('login')} className="font-semibold text-brand-700 transition hover:text-brand-800">
                         Log in
                     </Link>
                 </div>

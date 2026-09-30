@@ -20,42 +20,44 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout>
-            <Head title="Log In — BiogenixCGM" />
+            <Head title="Log in" />
 
-            <div className="mb-6 text-center">
-                <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
-                <p className="text-slate-500 text-sm mt-1">Log in to manage your orders and device dashboard.</p>
+            <div className="mb-8 text-center">
+                <h1 className="font-display text-display-xs font-normal text-ink-950 sm:text-display-sm">Welcome back</h1>
+                <p className="mt-2 text-sm text-ink-500">Log in to manage your orders and device dashboard.</p>
             </div>
 
             {status && (
-                <div className="mb-4 p-3 bg-green-50 border border-green-100 rounded-xl text-sm font-semibold text-green-700">
+                <div role="status" className="mb-6 rounded-2xl bg-brand-50 p-4 text-sm font-medium text-brand-800">
                     {status}
                 </div>
             )}
 
-            <form onSubmit={submit} className="space-y-4">
+            <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address</label>
+                    <label htmlFor="email" className="field-label">Email address</label>
                     <input
                         id="email"
                         type="email"
                         value={data.email}
                         onChange={(e) => setData('email', e.target.value)}
-                        className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-800 text-sm py-3 px-4 transition ${errors.email ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                        className={`field${errors.email ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                        aria-invalid={errors.email ? 'true' : undefined}
+                        aria-describedby={errors.email ? 'email-error' : undefined}
                         autoComplete="username"
                         required
                         placeholder="yourname@example.com"
                     />
-                    <InputError message={errors.email} className="mt-1.5" />
+                    <InputError id="email-error" message={errors.email} />
                 </div>
 
                 <div>
-                    <div className="flex justify-between items-center mb-1">
-                        <label className="block text-sm font-semibold text-slate-700">Password</label>
+                    <div className="mb-1.5 flex items-center justify-between gap-3">
+                        <label htmlFor="password" className="field-label mb-0">Password</label>
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
-                                className="text-xs text-teal-700 hover:text-teal-800 hover:underline transition"
+                                className="-my-2 inline-block py-2 text-sm font-medium text-brand-700 transition hover:text-brand-800 hover:underline"
                             >
                                 Forgot password?
                             </Link>
@@ -66,22 +68,23 @@ export default function Login({ status, canResetPassword }) {
                         type="password"
                         value={data.password}
                         onChange={(e) => setData('password', e.target.value)}
-                        className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-800 text-sm py-3 px-4 transition ${errors.password ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}`}
+                        className={`field${errors.password ? ' border-red-400 focus:border-red-500 focus:ring-red-500/15' : ''}`}
+                        aria-invalid={errors.password ? 'true' : undefined}
+                        aria-describedby={errors.password ? 'password-error' : undefined}
                         autoComplete="current-password"
                         required
-                        placeholder="••••••••"
                     />
-                    <InputError message={errors.password} className="mt-1.5" />
+                    <InputError id="password-error" message={errors.password} />
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <label className="flex items-center cursor-pointer select-none">
+                    <label className="flex cursor-pointer select-none items-center">
                         <Checkbox
                             name="remember"
                             checked={data.remember}
                             onChange={(e) => setData('remember', e.target.checked)}
                         />
-                        <span className="ms-2 text-sm text-slate-500">
+                        <span className="ms-2 text-sm text-ink-500">
                             Remember me
                         </span>
                     </label>
@@ -90,14 +93,14 @@ export default function Login({ status, canResetPassword }) {
                 <button
                     type="submit"
                     disabled={processing}
-                    className="btn-primary w-full text-center flex items-center justify-center gap-2 mt-2"
+                    className="btn-primary mt-2 w-full gap-2"
                 >
-                    Log In <LogIn size={16} />
+                    Log in <LogIn size={16} aria-hidden="true" />
                 </button>
 
-                <div className="pt-4 text-center border-t border-slate-100 text-sm text-slate-500">
+                <div className="border-t border-ink-900/[0.06] pt-5 text-center text-sm text-ink-500">
                     Don't have an account?{' '}
-                    <Link href={route('register')} className="text-teal-700 font-bold hover:text-teal-800 transition">
+                    <Link href={route('register')} className="font-semibold text-brand-700 transition hover:text-brand-800">
                         Sign up now
                     </Link>
                 </div>

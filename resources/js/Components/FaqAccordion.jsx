@@ -49,7 +49,7 @@ export default function FaqAccordion({ faqs }) {
                         >
                             <div className="overflow-hidden">
                                 <div className="pb-6 pr-12">
-                                    <p className="text-[0.9375rem] leading-relaxed text-ink-600">{faq.answer}</p>
+                                    <p className="max-w-[34rem] text-[0.9375rem] leading-relaxed text-ink-600">{faq.answer}</p>
                                     {faq.category && <span className="chip-brand mt-4">{faq.category}</span>}
                                 </div>
                             </div>

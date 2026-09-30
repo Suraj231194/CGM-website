@@ -1,0 +1,1 @@
+import{j as n}from"./app-Bif8JXZ1.js";function a({className:t="",disabled:r,children:s,...m}){return n.jsx("button",{...m,className:"btn-primary !py-2.5 text-sm "+t,disabled:r,children:s})}export{a as P};

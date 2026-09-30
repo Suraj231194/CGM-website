@@ -26,6 +26,8 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/compare', [ProductController::class, 'compare'])->name('products.compare');
 Route::get('/how-it-works', [PageController::class, 'howItWorks'])->name('how-it-works');
+Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms');
 Route::get('/resources', [ResourceController::class, 'index'])->name('resources.index');
 Route::get('/support', [SupportController::class, 'index'])->name('support');
 Route::get('/hcp', [HcpController::class, 'index'])->name('hcp');

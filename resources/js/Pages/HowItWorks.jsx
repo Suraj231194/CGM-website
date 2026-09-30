@@ -6,13 +6,13 @@ import PhoneMockup from '@/Components/PhoneMockup';
 import Reveal from '@/Components/Reveal';
 import CtaBand from '@/Components/CtaBand';
 import SafetyNotice from '@/Components/SafetyNotice';
-import { ArrowRight, BellRing, FileBarChart, Headphones, MousePointer, Search, Smartphone, Users } from 'lucide-react';
+import { ArrowRight, BellRing, FileBarChart, Users } from 'lucide-react';
 
 const steps = [
-    { icon: Search, number: '01', title: 'Choose Your Device', description: 'Start by exploring our product range. Whether you need continuous glucose monitoring, insulin delivery, or dose tracking — we have a device designed for your lifestyle. Use our comparison tool to see features side by side, or speak with our team for personalized guidance.', art: '/images/art/step-choose.svg', link: { label: 'Compare products', href: '/compare' } },
-    { icon: MousePointer, number: '02', title: 'Easy Application & Setup', description: 'Getting started is simple. Our sensors and pods apply in seconds with a one-touch applicator. Download the biogenixCGM app, follow the guided setup, and your device will be paired and ready within minutes. No complicated installations — just apply and go.', art: '/images/art/step-apply.svg', link: { label: 'Setup guides', href: '/resources' } },
-    { icon: Smartphone, number: '03', title: 'Real-Time Monitoring', description: 'See your glucose data on your smartphone in real time. Customize alerts for highs, lows, and urgent events. Track trends, generate reports, and share your data with up to 10 followers — family, caregivers, or your healthcare team. All from one intuitive app.', art: '/images/art/step-monitor.svg', link: { label: 'Explore the CGM', href: '/products' } },
-    { icon: Headphones, number: '04', title: 'Ongoing Support & Care', description: 'You are never alone on your diabetes journey. Our 24/7 support team is available by phone, email, and in-app chat. Access educational resources, video tutorials, and community forums. Schedule regular check-ins with your care team using shareable reports from the biogenixCGM app.', art: '/images/art/step-support.svg', link: { label: 'Visit support', href: '/support' } },
+    { number: '01', title: 'Choose your device', description: 'Start by exploring our product range. Whether you need continuous glucose monitoring, insulin delivery, or dose tracking — we have a device designed for your lifestyle. Use our comparison tool to see features side by side, or speak with our team for personalized guidance.', art: '/images/art/step-choose.svg', link: { label: 'Compare products', href: '/compare' } },
+    { number: '02', title: 'Easy application and setup', description: 'Getting started is simple. Our sensors and pods apply in seconds with a one-touch applicator. Download the biogenixCGM app, follow the guided setup, and your device will be paired and ready within minutes. No complicated installations — just apply and go.', art: '/images/art/step-apply.svg', link: { label: 'Setup guides', href: '/resources' } },
+    { number: '03', title: 'Real-time monitoring', description: 'See your glucose data on your smartphone in real time. Customize alerts for highs, lows, and urgent events. Track trends, generate reports, and share your data with up to 10 followers — family, caregivers, or your healthcare team. All from one intuitive app.', art: '/images/art/step-monitor.svg', link: { label: 'Explore the CGM', href: '/products' } },
+    { number: '04', title: 'Ongoing support and care', description: 'You are never alone on your diabetes journey. Our 24/7 support team is available by phone, email, and in-app chat. Access educational resources, video tutorials, and community forums. Schedule regular check-ins with your care team using shareable reports from the biogenixCGM app.', art: '/images/art/step-support.svg', link: { label: 'Visit support', href: '/support' } },
 ];
 
 const appFeatures = [
@@ -24,13 +24,13 @@ const appFeatures = [
 export default function HowItWorks() {
     return (
         <MainLayout>
-            <Head title="How It Works" />
+            <Head title="How it works" />
 
             <PageHero
                 eyebrow="How it works"
                 title="From first look to everyday life."
                 subtitle="From choosing your device to ongoing support — getting started with biogenixCGM is simple, seamless, and supported every step of the way."
-                breadcrumbs={[{ label: 'How It Works' }]}
+                breadcrumbs={[{ label: 'How it works' }]}
             >
                 <div className="flex flex-wrap justify-center gap-2">
                     {steps.map((s) => (
@@ -45,17 +45,15 @@ export default function HowItWorks() {
             <section className="container-page section-pad">
                 <ol className="relative space-y-24 md:space-y-32">
                     {steps.map((step, i) => (
-                        <li key={step.number} id={`step-${step.number}`} className="scroll-mt-28">
+                        <li key={step.number} id={`step-${step.number}`}>
                             <div className={`grid items-center gap-10 md:grid-cols-2 lg:gap-20 ${i % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}>
-                                <Reveal className="overflow-hidden rounded-5xl border border-ink-900/[0.06] bg-white shadow-soft">
+                                <Reveal className="overflow-hidden rounded-5xl border border-ink-900/[0.06] bg-white">
                                     <img src={step.art} alt="" width="640" height="480" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" className="aspect-[4/3] w-full object-cover" />
                                 </Reveal>
                                 <Reveal delay={120}>
-                                    <div className="flex items-center gap-4">
-                                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-700 text-white shadow-soft">
-                                            <step.icon size={22} aria-hidden="true" />
-                                        </span>
-                                        <span className="font-display text-5xl leading-none text-ink-100">{step.number}</span>
+                                    <div className="flex items-center gap-4" aria-hidden="true">
+                                        <span className="font-display text-display-sm leading-none text-brand-600">{step.number}</span>
+                                        <span className="h-px flex-1 bg-ink-900/10" />
                                     </div>
                                     <h2 className="mt-6 font-display text-display-sm font-normal text-ink-950">{step.title}</h2>
                                     <p className="mt-5 max-w-lg text-pretty text-lg leading-relaxed text-ink-500">{step.description}</p>
@@ -75,6 +73,7 @@ export default function HowItWorks() {
                     <div>
                         <SectionHeader
                             tone="dark"
+                            compact
                             eyebrow="The companion app"
                             title="Everything you need, in one intuitive app."
                             subtitle="See your glucose data on your smartphone in real time — on iOS and Android."
@@ -98,15 +97,16 @@ export default function HowItWorks() {
                         <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-glow/10 blur-3xl" aria-hidden="true" />
                         <div className="relative">
                             <PhoneMockup />
-                            <p className="mt-4 text-center text-xs text-white/45">Illustrative app display</p>
+                            <p className="mt-4 text-center text-xs text-white/60">Illustrative app display</p>
                         </div>
                     </Reveal>
                 </div>
             </section>
 
             <CtaBand
-                eyebrow="Get started"
-                title="Ready to Get Started?"
+                tone="light"
+                eyebrow="Next step"
+                title="Ready to get started?"
                 text="Explore our products or connect with our team to find the right solution for you."
                 primary={{ label: 'Explore products', href: '/products' }}
                 secondary={{ label: 'Request information', href: '/contact' }}

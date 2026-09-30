@@ -40,17 +40,17 @@ export default function Index({ tickets = [] }) {
 
     const getStatusStyle = (status) => {
         const styles = {
-            open: 'bg-amber-50 text-amber-705 border-amber-200',
-            in_progress: 'bg-blue-50 text-blue-705 border-blue-200',
-            resolved: 'bg-emerald-50 text-emerald-705 border-emerald-200',
-            closed: 'bg-slate-55/60 text-slate-600 border-slate-200',
+            open: 'bg-amber-50 text-amber-700 border-amber-200',
+            in_progress: 'bg-blue-50 text-blue-700 border-blue-200',
+            resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            closed: 'bg-slate-50/60 text-slate-600 border-slate-200',
         };
         return styles[status] || 'bg-slate-50 text-slate-700 border-slate-200';
     };
 
     return (
         <AdminLayout>
-            <Head title="Support Tickets Console — AdminPanel" />
+            <Head title="Support Tickets Console" />
 
             <div className="p-6 space-y-6">
                 {/* Header */}
@@ -99,7 +99,7 @@ export default function Index({ tickets = [] }) {
                             className="w-full pl-10 rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-xs placeholder:text-slate-400 py-2.5"
                         />
                     </div>
-                    <div className="flex items-center gap-1.5 text-xs text-slate-405 font-bold ml-auto flex-shrink-0">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 font-bold ml-auto flex-shrink-0">
                         <Filter size={14} /> Showing {filteredTickets.length} of {tickets.length} tickets
                     </div>
                 </div>
@@ -118,7 +118,7 @@ export default function Index({ tickets = [] }) {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead>
-                                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-505 font-bold uppercase tracking-wider">
+                                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-bold uppercase tracking-wider">
                                         <th className="px-6 py-4">Ticket ID</th>
                                         <th className="px-6 py-4">Patient Details</th>
                                         <th className="px-6 py-4">Subject</th>

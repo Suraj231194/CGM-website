@@ -1,30 +1,28 @@
 import { useState } from 'react';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import axios from 'axios';
 import MainLayout from '@/Layouts/MainLayout';
+import StatusBadge, { PAYMENT_METHOD_LABELS } from '@/Components/StatusBadge';
+import { formatDate, formatPrice } from '@/lib/format';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
-import { 
-    User, 
-    ClipboardList, 
-    Calendar, 
-    Eye, 
-    CreditCard, 
-    Truck, 
-    FileText, 
-    ArrowLeft, 
-    ShieldAlert, 
-    Settings, 
-    ShoppingBag, 
-    DollarSign, 
-    ShieldCheck, 
-    Clock,
-    UserCheck,
+import {
+    ClipboardList,
+    Calendar,
+    Eye,
+    CreditCard,
+    Truck,
+    FileText,
+    ArrowLeft,
+    ShieldAlert,
+    Settings,
+    ShoppingBag,
     CheckCircle2,
     MessageSquare,
     Send,
-    Paperclip
+    AlertTriangle,
+    Check
 } from 'lucide-react';
 
 export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [] }) {
@@ -34,8 +32,8 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
     const [selectedTicket, setSelectedTicket] = useState(null);
 
     // Sync selected ticket with latest data from props when props.tickets changes
-    const activeTicket = selectedTicket 
-        ? tickets.find(t => t.id === selectedTicket.id) || selectedTicket 
+    const activeTicket = selectedTicket
+        ? tickets.find(t => t.id === selectedTicket.id) || selectedTicket
         : null;
 
     const [replyMessage, setReplyMessage] = useState('');
@@ -65,42 +63,22 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
         });
     };
 
-    // Calculate user statistics
-    const totalSpent = orders.reduce((sum, order) => sum + Number(order.total), 0);
+    // Calculate user statistics (cancelled orders are not money spent)
+    const totalSpent = orders
+        .filter((o) => o.status !== 'cancelled')
+        .reduce((sum, order) => sum + Number(order.total), 0);
     const completedOrders = orders.filter(o => o.status === 'delivered').length;
 
-    const getStatusStyle = (status) => {
-        const styles = {
-            placed: 'bg-blue-50 text-blue-700 border-blue-100',
-            confirmed: 'bg-amber-50 text-amber-700 border-amber-100',
-            shipped: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-            delivered: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-            cancelled: 'bg-rose-50 text-rose-700 border-rose-100',
-        };
-        return styles[status] || 'bg-slate-50 text-slate-700 border-slate-100';
-    };
+    // Account identity: the signed-in user first, the latest shipping address as a fallback
+    const displayName = auth.user?.name || orders[0]?.shipping_address?.name;
+    const displayEmail = auth.user?.email || orders[0]?.shipping_address?.email;
+    const memberSince = auth.user?.created_at ? `Member since ${formatDate(auth.user.created_at)}` : 'Registered member';
 
-    const getPaymentStatusStyle = (status) => {
-        const styles = {
-            pending: 'bg-amber-55/10 text-amber-800 border-amber-100',
-            pending_verification: 'bg-orange-50 text-orange-700 border-orange-100',
-            paid: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-            failed: 'bg-rose-50 text-rose-700 border-rose-100',
-        };
-        return styles[status] || 'bg-slate-50 text-slate-700 border-slate-150';
-    };
-
-    const paymentStatusLabels = {
-        pending: 'Pending',
-        pending_verification: 'Verifying',
-        paid: 'Paid',
-        failed: 'Failed',
-    };
-
-    const paymentMethodLabel = {
-        cod: 'Cash on Delivery',
-        online: 'UPI / Online Scan',
-    };
+    // Tab rail styles (full literals so Tailwind sees every class)
+    const tabClass = (active) =>
+        `inline-flex shrink-0 items-center gap-3 rounded-full px-4 py-2.5 text-sm font-medium transition lg:rounded-2xl lg:px-5 lg:py-3.5 ${active ? 'bg-brand-800 text-white shadow-soft' : 'bg-white text-ink-600 ring-1 ring-ink-900/[0.06] hover:text-brand-700'}`;
+    const tabCountClass = (active) =>
+        `ml-auto rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums ${active ? 'bg-white/15 text-white' : 'bg-sand-100 text-ink-600'}`;
 
     // Helper for visual order tracker steps
     const orderSteps = ['placed', 'confirmed', 'shipped', 'delivered'];
@@ -108,52 +86,47 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
 
     return (
         <MainLayout>
-            <Head title="Account Dashboard — BiogenixCGM" />
+            <Head title="My account" />
 
-            <div className="bg-slate-50/50 min-h-screen py-10">
-                <div className="max-w-7xl mx-auto px-4 space-y-8">
-                    
-                    {/* Premium Profile Header Card */}
-                    <div className="card border-0 bg-gradient-to-r from-teal-850 to-teal-700 shadow-xl overflow-hidden relative rounded-3xl">
-                        {/* Decorative background shapes */}
-                        <div className="absolute right-0 top-0 w-96 h-96 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl" />
-                        <div className="absolute left-1/3 bottom-0 w-64 h-64 bg-teal-600/10 rounded-full -ml-16 -mb-16 blur-xl" />
+            <div className="pb-20 pt-8 md:pt-12">
+                <div className="container-page space-y-8">
 
-                        <div className="p-8 md:p-10 relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8 text-white">
+                    {/* Profile Header Card */}
+                    <div className="relative overflow-hidden rounded-4xl bg-radiance grain text-white shadow-lift">
+                        <div className="relative z-10 flex flex-col justify-between gap-8 p-6 text-white sm:p-8 md:p-10 lg:flex-row lg:items-center">
                             {/* Profile details */}
-                            <div className="flex items-center gap-5 sm:gap-6">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl font-black text-white shadow-lg relative">
-                                    {orders[0]?.shipping_address?.name?.[0] || 'U'}
-                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-teal-800" title="Active Health Account" />
+                            <div className="flex min-w-0 items-center gap-5 sm:gap-6">
+                                <div className="relative grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white/10 font-display text-3xl font-normal text-white ring-1 ring-white/20 sm:h-20 sm:w-20" aria-hidden="true">
+                                    {(auth.user?.name || orders[0]?.shipping_address?.name || 'M')[0].toUpperCase()}
                                 </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-xl sm:text-2xl font-black tracking-tight flex items-center gap-2">
-                                        {orders[0]?.shipping_address?.name || 'Biogenix User'}
-                                        <span className="text-[10px] tracking-widest font-extrabold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-                                            <UserCheck size={10} /> Verified Patient
-                                        </span>
-                                    </h2>
-                                    <p className="text-teal-100 text-xs sm:text-sm font-medium">{orders[0]?.shipping_address?.email || 'Secure Profile Dashboard'}</p>
-                                    <p className="text-[10px] text-teal-200/80 font-bold flex items-center gap-1 mt-1">
-                                        <Calendar size={11} /> Registered Member
+                                <div className="min-w-0 space-y-1">
+                                    <h1 className="flex flex-wrap items-center gap-3 font-display text-3xl font-normal tracking-tight sm:text-4xl">
+                                        <span className="min-w-0 break-words">{displayName || 'Your account'}</span>
+                                        <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 font-sans text-xs font-medium tracking-normal text-white/80">Member</span>
+                                    </h1>
+                                    {displayEmail && (
+                                        <p className="break-words text-sm text-white/70">{displayEmail}</p>
+                                    )}
+                                    <p className="mt-1 flex items-center gap-1 text-xs text-white/60">
+                                        <Calendar size={12} aria-hidden="true" /> {memberSince}
                                     </p>
                                 </div>
                             </div>
 
                             {/* Dashboard Metrics */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 lg:gap-6 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-4 sm:p-5">
-                                <div className="space-y-1 pr-4 sm:border-r border-white/10">
-                                    <span className="text-[10px] text-teal-200/80 font-extrabold uppercase tracking-wider block">Total Spent</span>
-                                    <span className="text-lg sm:text-xl font-black text-white">₹{totalSpent.toLocaleString('en-IN')}</span>
+                            <div className="grid grid-cols-2 gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-4 sm:grid-cols-3 sm:p-5 lg:gap-6">
+                                <div className="col-span-2 space-y-1 border-b border-white/10 pb-3 sm:col-span-1 sm:border-b-0 sm:border-r sm:pb-0 sm:pr-4">
+                                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-white/70">Total Spent</span>
+                                    <span className="block font-display text-3xl tabular-nums text-white">{formatPrice(totalSpent)}</span>
                                 </div>
-                                <div className="space-y-1 pr-0 sm:pr-4 sm:border-r border-white/10">
-                                    <span className="text-[10px] text-teal-200/80 font-extrabold uppercase tracking-wider block">Device Orders</span>
-                                    <span className="text-lg sm:text-xl font-black text-white">{orders.length}</span>
+                                <div className="space-y-1 sm:border-r sm:border-white/10 sm:pr-4">
+                                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-white/70">Device Orders</span>
+                                    <span className="block font-display text-3xl tabular-nums text-white">{orders.length}</span>
                                 </div>
-                                <div className="col-span-2 sm:col-span-1 space-y-1 pt-3 sm:pt-0 border-t sm:border-t-0 border-white/10">
-                                    <span className="text-[10px] text-teal-200/80 font-extrabold uppercase tracking-wider block">Delivered</span>
-                                    <span className="text-lg sm:text-xl font-black text-emerald-300 flex items-center gap-1">
-                                        {completedOrders} <CheckCircle2 size={16} />
+                                <div className="space-y-1">
+                                    <span className="block text-xs font-medium uppercase tracking-[0.14em] text-white/70">Delivered</span>
+                                    <span className="flex items-center gap-1 font-display text-3xl tabular-nums text-glow">
+                                        {completedOrders} <CheckCircle2 size={20} aria-hidden="true" />
                                     </span>
                                 </div>
                             </div>
@@ -161,57 +134,63 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                     </div>
 
                     {/* Main Layout Grid */}
-                    <div className="grid lg:grid-cols-12 gap-8 items-start">
-                        {/* Left Column Navigation Sidebar */}
-                        <div className="lg:col-span-3 space-y-3">
+                    <div className="grid items-start gap-8 lg:grid-cols-12">
+                        {/* Left Column Navigation Rail (a scrolling row on phones, a column from lg) */}
+                        <nav aria-label="Account sections" className="-m-1.5 flex gap-2 overflow-x-auto p-1.5 lg:col-span-3 lg:flex-col lg:gap-1.5">
                             <button
+                                type="button"
                                 onClick={() => { setActiveTab('settings'); setSelectedOrder(null); setSelectedTicket(null); }}
-                                className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${activeTab === 'settings' ? 'bg-teal-700 text-white shadow-lg shadow-teal-700/10 scale-[1.02]' : 'bg-white hover:bg-slate-50 border text-slate-600 hover:text-teal-700 border-slate-200/60 shadow-sm'}`}
+                                aria-pressed={activeTab === 'settings'}
+                                className={tabClass(activeTab === 'settings')}
                             >
-                                <Settings size={18} /> Account Settings
+                                <Settings size={18} aria-hidden="true" /> Account settings
                             </button>
                             <button
+                                type="button"
                                 onClick={() => { setActiveTab('orders'); setSelectedTicket(null); }}
-                                className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${activeTab === 'orders' ? 'bg-teal-700 text-white shadow-lg shadow-teal-700/10 scale-[1.02]' : 'bg-white hover:bg-slate-50 border text-slate-600 hover:text-teal-700 border-slate-200/60 shadow-sm'}`}
+                                aria-pressed={activeTab === 'orders'}
+                                className={tabClass(activeTab === 'orders')}
                             >
-                                <ShoppingBag size={18} /> Order History
+                                <ShoppingBag size={18} aria-hidden="true" /> Order history
                                 {orders.length > 0 && (
-                                    <span className={`ml-auto text-xs px-2.5 py-0.5 rounded-full font-bold ${activeTab === 'orders' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 border border-slate-200/30'}`}>
+                                    <span className={tabCountClass(activeTab === 'orders')}>
                                         {orders.length}
                                     </span>
                                 )}
                             </button>
                             <button
+                                type="button"
                                 onClick={() => { setActiveTab('tickets'); setSelectedOrder(null); }}
-                                className={`w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${activeTab === 'tickets' ? 'bg-teal-700 text-white shadow-lg shadow-teal-700/10 scale-[1.02]' : 'bg-white hover:bg-slate-50 border text-slate-600 hover:text-teal-700 border-slate-200/60 shadow-sm'}`}
+                                aria-pressed={activeTab === 'tickets'}
+                                className={tabClass(activeTab === 'tickets')}
                             >
-                                <MessageSquare size={18} /> Support Tickets
+                                <MessageSquare size={18} aria-hidden="true" /> Support tickets
                                 {tickets.length > 0 && (
-                                    <span className={`ml-auto text-xs px-2.5 py-0.5 rounded-full font-bold ${activeTab === 'tickets' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 border border-slate-200/30'}`}>
+                                    <span className={tabCountClass(activeTab === 'tickets')}>
                                         {tickets.length}
                                     </span>
                                 )}
                             </button>
-                        </div>
+                        </nav>
 
                         {/* Right Column Content View */}
-                        <div className="lg:col-span-9 space-y-6">
-                            
+                        <div className="min-w-0 space-y-6 lg:col-span-9">
+
                             {/* Settings View */}
                             {activeTab === 'settings' && (
                                 <div className="space-y-6">
-                                    <div className="card p-6 md:p-8 bg-white border border-slate-200/60 shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md">
+                                    <div className="card p-6 md:p-8">
                                         <UpdateProfileInformationForm
                                             mustVerifyEmail={mustVerifyEmail}
                                             status={status}
                                         />
                                     </div>
 
-                                    <div className="card p-6 md:p-8 bg-white border border-slate-200/60 shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md">
+                                    <div className="card p-6 md:p-8">
                                         <UpdatePasswordForm />
                                     </div>
 
-                                    <div className="card p-6 md:p-8 bg-white border border-red-200 shadow-sm rounded-2xl transition-all duration-300 hover:shadow-md">
+                                    <div className="card border-red-200/70 p-6 md:p-8">
                                         <DeleteUserForm />
                                     </div>
                                 </div>
@@ -220,97 +199,98 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                             {/* Orders View */}
                             {activeTab === 'orders' && (
                                 <div className="space-y-6">
-                                    
+
                                     {/* Order Details Panel */}
                                     {selectedOrder ? (
-                                        <div className="card p-6 md:p-8 bg-white border border-slate-200/60 shadow-lg rounded-3xl space-y-8 animate-fade-in">
+                                        <div className="card animate-fade-in space-y-8 p-6 md:p-8">
                                             {/* Header details */}
-                                            <div className="flex items-center justify-between border-b pb-4 border-slate-100">
+                                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-900/[0.06] pb-4">
                                                 <button
+                                                    type="button"
                                                     onClick={() => setSelectedOrder(null)}
-                                                    className="inline-flex items-center text-xs font-extrabold text-slate-500 hover:text-teal-700 transition"
+                                                    className="inline-flex items-center text-sm font-semibold text-ink-500 transition hover:text-brand-700"
                                                 >
-                                                    <ArrowLeft size={16} className="mr-1.5" /> Back to History
+                                                    <ArrowLeft size={16} className="mr-1.5" aria-hidden="true" /> Back to history
                                                 </button>
-                                                <span className="font-bold text-slate-800 text-sm font-mono">Order: #{selectedOrder.order_number}</span>
+                                                <h2 className="text-sm font-semibold tracking-tight tabular-nums text-ink-900">Order #{selectedOrder.order_number}</h2>
                                             </div>
 
                                             {/* Visual Progress Tracker */}
                                             {selectedOrder.status !== 'cancelled' ? (
                                                 <div className="py-4">
-                                                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Delivery Telemetry</h4>
+                                                    <h3 className="mb-6 text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">Delivery progress</h3>
                                                     <div className="relative">
                                                         {/* Connector line */}
-                                                        <div className="absolute top-4 left-4 right-4 h-1 bg-slate-100 -translate-y-1/2 z-0 rounded-full">
-                                                            <div 
-                                                                className="h-full bg-gradient-to-r from-teal-500 to-teal-700 transition-all duration-500 rounded-full"
-                                                                style={{ width: `${(getStepIndex(selectedOrder.status) / (orderSteps.length - 1)) * 100}%` }}
+                                                        <div className="absolute left-4 right-4 top-4 z-0 h-1 -translate-y-1/2 rounded-full bg-ink-900/10">
+                                                            <div
+                                                                className="h-full rounded-full bg-brand-600 transition-all duration-500"
+                                                                style={{ width: `${(Math.max(getStepIndex(selectedOrder.status), 0) / (orderSteps.length - 1)) * 100}%` }}
                                                             />
                                                         </div>
 
                                                         {/* Progress Steps */}
-                                                        <div className="relative z-10 flex justify-between">
+                                                        <ol className="relative z-10 flex justify-between">
                                                             {orderSteps.map((step, idx) => {
                                                                 const isCompleted = idx <= getStepIndex(selectedOrder.status);
                                                                 const isActive = step === selectedOrder.status;
                                                                 return (
-                                                                    <div key={step} className="flex flex-col items-center text-center">
-                                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 font-bold text-xs transition duration-300 ${isCompleted ? 'bg-teal-700 border-teal-700 text-white shadow-md shadow-teal-700/20' : 'bg-white border-slate-200 text-slate-400'}`}>
-                                                                            {isCompleted ? '✓' : idx + 1}
+                                                                    <li key={step} className="flex flex-col items-center text-center" aria-current={isActive ? 'step' : undefined}>
+                                                                        <div className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-xs font-semibold transition duration-300 ${isCompleted ? 'border-brand-700 bg-brand-700 text-white' : 'border-ink-900/10 bg-white text-ink-500'}`}>
+                                                                            {isCompleted ? <Check size={14} aria-hidden="true" /> : idx + 1}
                                                                         </div>
-                                                                        <span className={`text-[10px] font-extrabold uppercase mt-2.5 tracking-wider ${isActive ? 'text-teal-700' : isCompleted ? 'text-slate-700' : 'text-slate-400'}`}>
+                                                                        <span className={`mt-2.5 text-xs font-semibold capitalize ${isActive ? 'text-brand-700' : isCompleted ? 'text-ink-700' : 'text-ink-500'}`}>
                                                                             {step}
                                                                         </span>
-                                                                    </div>
+                                                                    </li>
                                                                 );
                                                             })}
-                                                        </div>
+                                                        </ol>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-800">
-                                                    <ShieldAlert size={20} className="flex-shrink-0" />
-                                                    <p className="text-xs font-semibold">This order has been cancelled.</p>
+                                                <div className="flex items-center gap-3 rounded-2xl border border-red-100 bg-red-50 p-4 text-red-800">
+                                                    <ShieldAlert size={20} className="flex-shrink-0" aria-hidden="true" />
+                                                    <p className="text-sm font-medium">This order has been cancelled.</p>
                                                 </div>
                                             )}
 
                                             {/* Details Breakdown */}
-                                            <div className="grid md:grid-cols-2 gap-8 pt-4 border-t border-slate-100">
+                                            <div className="grid gap-8 border-t border-ink-900/[0.06] pt-4 md:grid-cols-2">
                                                 {/* Invoice */}
-                                                <div className="space-y-4">
-                                                    <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5"><FileText size={18} className="text-teal-700" /> Invoice Summary</h3>
-                                                    <div className="divide-y divide-slate-100 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                                                <div className="min-w-0 space-y-4">
+                                                    <h3 className="flex items-center gap-1.5 text-sm font-bold text-ink-900"><FileText size={18} className="text-brand-700" aria-hidden="true" /> Invoice Summary</h3>
+                                                    <div className="divide-y divide-ink-900/[0.06] rounded-2xl border border-ink-900/[0.06] bg-sand-100 p-5">
                                                         {selectedOrder.items.map((item) => (
-                                                            <div key={item.id} className="py-3 flex justify-between text-xs font-semibold first:pt-0 last:pb-0">
-                                                                <span className="text-slate-655 truncate max-w-[220px]">
-                                                                    {item.product_name} <span className="text-slate-400 font-extrabold ml-1">× {item.quantity}</span>
+                                                            <div key={item.id} className="flex justify-between gap-4 py-3 text-sm font-medium first:pt-0 last:pb-0">
+                                                                <span className="min-w-0 truncate text-ink-600">
+                                                                    {item.product_name} <span className="ml-1 font-semibold text-ink-500">× {item.quantity}</span>
                                                                 </span>
-                                                                <span className="font-bold text-slate-800">₹{Number(item.price * item.quantity).toLocaleString('en-IN')}</span>
+                                                                <span className="shrink-0 font-semibold tabular-nums text-ink-900">{formatPrice(item.price * item.quantity)}</span>
                                                             </div>
                                                         ))}
-                                                        <hr className="border-slate-200/60 my-3" />
-                                                        <div className="flex justify-between text-xs text-slate-500 pt-1">
+                                                        <hr className="my-3 border-ink-900/[0.06]" />
+                                                        <div className="flex justify-between pt-1 text-sm text-ink-500">
                                                             <span>Subtotal</span>
-                                                            <span>₹{Number(selectedOrder.subtotal).toLocaleString('en-IN')}</span>
+                                                            <span className="tabular-nums">{formatPrice(selectedOrder.subtotal)}</span>
                                                         </div>
-                                                        <div className="flex justify-between text-xs text-slate-500 pt-1">
+                                                        <div className="flex justify-between pt-1 text-sm text-ink-500">
                                                             <span>Shipping Charge</span>
-                                                            <span>₹{Number(selectedOrder.shipping_charge).toLocaleString('en-IN')}</span>
+                                                            <span className="tabular-nums">{formatPrice(selectedOrder.shipping_charge)}</span>
                                                         </div>
-                                                        <div className="flex justify-between text-sm pt-3.5 font-black text-slate-850">
+                                                        <div className="flex items-baseline justify-between pt-3.5 text-sm font-semibold text-ink-950">
                                                             <span>Grand Total</span>
-                                                            <span className="text-teal-700 text-base">₹{Number(selectedOrder.total).toLocaleString('en-IN')}</span>
+                                                            <span className="text-base tabular-nums text-brand-700">{formatPrice(selectedOrder.total)}</span>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Ship/Pay Details */}
-                                                <div className="space-y-6">
+                                                <div className="min-w-0 space-y-6">
                                                     {/* Shipping Address details */}
                                                     <div className="space-y-3">
-                                                        <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5"><Truck size={18} className="text-teal-700" /> Shipping Destination</h3>
-                                                        <div className="text-xs text-slate-600 leading-relaxed pl-6">
-                                                            <p className="font-extrabold text-slate-800 text-sm">{selectedOrder.shipping_address.name}</p>
+                                                        <h3 className="flex items-center gap-1.5 text-sm font-bold text-ink-900"><Truck size={18} className="text-brand-700" aria-hidden="true" /> Shipping Destination</h3>
+                                                        <div className="break-words pl-6 text-sm leading-relaxed text-ink-700">
+                                                            <p className="font-semibold text-ink-900">{selectedOrder.shipping_address.name}</p>
                                                             <p className="mt-1">{selectedOrder.shipping_address.address_line_1}</p>
                                                             {selectedOrder.shipping_address.address_line_2 && <p>{selectedOrder.shipping_address.address_line_2}</p>}
                                                             <p>{selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state} - {selectedOrder.shipping_address.pincode}</p>
@@ -318,20 +298,18 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                                                     </div>
 
                                                     {/* Payment details */}
-                                                    <div className="space-y-3 border-t pt-4 border-slate-100">
-                                                        <h3 className="font-bold text-slate-800 text-sm flex items-center gap-1.5"><CreditCard size={18} className="text-teal-700" /> Payment Transaction</h3>
-                                                        <div className="text-xs text-slate-600 pl-6 space-y-2.5">
-                                                            <p><span className="text-slate-400 font-bold">Method:</span> {paymentMethodLabel[selectedOrder.payment_method]}</p>
-                                                            <p className="flex items-center gap-2">
-                                                                <span className="text-slate-400 font-bold">Status:</span>
-                                                                <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold ${getPaymentStatusStyle(selectedOrder.payment_status)}`}>
-                                                                    {paymentStatusLabels[selectedOrder.payment_status]}
-                                                                </span>
+                                                    <div className="space-y-3 border-t border-ink-900/[0.06] pt-4">
+                                                        <h3 className="flex items-center gap-1.5 text-sm font-bold text-ink-900"><CreditCard size={18} className="text-brand-700" aria-hidden="true" /> Payment Transaction</h3>
+                                                        <div className="space-y-2.5 pl-6 text-sm text-ink-700">
+                                                            <p><span className="font-semibold text-ink-500">Method:</span> {PAYMENT_METHOD_LABELS[selectedOrder.payment_method] ?? selectedOrder.payment_method}</p>
+                                                            <p className="flex flex-wrap items-center gap-2">
+                                                                <span className="font-semibold text-ink-500">Status:</span>
+                                                                <StatusBadge kind="payment" value={selectedOrder.payment_status} />
                                                             </p>
                                                             {selectedOrder.transaction_id && (
-                                                                <p className="flex items-center gap-1">
-                                                                    <span className="text-slate-400 font-bold">Ref ID:</span> 
-                                                                    <code className="bg-slate-50 px-2 py-0.5 border border-slate-200 rounded font-mono text-[10px] font-bold text-slate-700 select-all">{selectedOrder.transaction_id}</code>
+                                                                <p className="flex flex-wrap items-center gap-1">
+                                                                    <span className="font-semibold text-ink-500">Ref ID:</span>
+                                                                    <code className="break-all rounded-md border border-ink-900/[0.06] bg-sand-100 px-2 py-0.5 font-sans text-xs font-medium tabular-nums text-ink-700 select-all">{selectedOrder.transaction_id}</code>
                                                                 </p>
                                                             )}
                                                         </div>
@@ -343,55 +321,47 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                                         /* Orders List View */
                                         <div className="space-y-4">
                                             {orders.length === 0 ? (
-                                                <div className="card p-16 text-center bg-white border border-slate-200/60 shadow-sm rounded-3xl">
-                                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                                                        <ClipboardList size={32} />
+                                                <div className="card px-6 py-12 text-center sm:p-12">
+                                                    <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                                        <ClipboardList size={32} aria-hidden="true" />
                                                     </div>
-                                                    <h3 className="text-base font-bold text-slate-700 mb-1">No orders found</h3>
-                                                    <p className="text-xs text-slate-500 mb-6 max-w-xs mx-auto">You haven't ordered any Continuous Glucose Monitors or Smart Pens yet.</p>
-                                                    <Link href="/products" className="btn-primary text-xs px-5 py-2.5">Explore Our Devices</Link>
+                                                    <h3 className="mb-1 text-base font-bold text-ink-700">No orders found</h3>
+                                                    <p className="mx-auto mb-6 max-w-xs text-sm text-ink-500">You haven't ordered any Continuous Glucose Monitors or Smart Pens yet.</p>
+                                                    <Link href="/products" className="btn-primary px-5 py-2.5 text-sm">Explore Our Devices</Link>
                                                 </div>
                                             ) : (
-                                                orders.map((order) => {
-                                                    const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    });
-
-                                                    return (
-                                                        <div key={order.id} className="card p-5 md:p-6 bg-white border border-slate-200/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-5 hover:border-teal-300 hover:shadow-md transition-all duration-300 rounded-2xl">
-                                                            <div className="space-y-2">
-                                                                <div className="flex items-center gap-3 flex-wrap">
-                                                                    <span className="font-bold text-slate-800 text-sm font-mono bg-slate-50 border border-slate-200/30 px-2.5 py-0.5 rounded-lg">#{order.order_number}</span>
-                                                                    <span className={`text-[10px] font-bold px-2.5 py-0.5 border rounded-full uppercase tracking-wider ${getStatusStyle(order.status)}`}>
-                                                                        {order.status}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
-                                                                    <span className="flex items-center gap-1"><Calendar size={13} /> {dateStr}</span>
-                                                                    <span>•</span>
-                                                                    <span>{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
-                                                                    <span>•</span>
-                                                                    <span className="uppercase font-extrabold text-slate-500 bg-slate-50 px-2 py-0.5 rounded border text-[9px]">{order.payment_method}</span>
-                                                                </div>
+                                                orders.map((order) => (
+                                                    <div key={order.id} className="card flex flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center md:p-6">
+                                                        <div className="min-w-0 space-y-2">
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <span className="text-sm font-semibold tracking-tight tabular-nums text-ink-900">#{order.order_number}</span>
+                                                                <StatusBadge kind="order" value={order.status} />
+                                                                <StatusBadge kind="payment" value={order.payment_status} />
                                                             </div>
-
-                                                            <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100">
-                                                                <div className="text-left sm:text-right">
-                                                                    <div className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Grand Total</div>
-                                                                    <div className="text-xl font-black text-teal-700">₹{Number(order.total).toLocaleString('en-IN')}</div>
-                                                                </div>
-                                                                <button
-                                                                    onClick={() => setSelectedOrder(order)}
-                                                                    className="inline-flex items-center gap-1 text-xs font-extrabold text-teal-750 hover:text-teal-850 hover:underline transition"
-                                                                >
-                                                                    View Details <Eye size={14} />
-                                                                </button>
+                                                            <div className="flex flex-wrap items-center gap-3 text-xs text-ink-500">
+                                                                <span className="flex items-center gap-1"><Calendar size={13} aria-hidden="true" /> {formatDate(order.created_at)}</span>
+                                                                <span aria-hidden="true">•</span>
+                                                                <span>{order.items.length} {order.items.length === 1 ? 'item' : 'items'}</span>
+                                                                <span aria-hidden="true">•</span>
+                                                                <span>{PAYMENT_METHOD_LABELS[order.payment_method] ?? order.payment_method}</span>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })
+
+                                                        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-ink-900/[0.06] pt-3 sm:justify-end sm:border-0 sm:pt-0">
+                                                            <div className="text-left sm:text-right">
+                                                                <div className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">Grand Total</div>
+                                                                <div className="font-display text-2xl tabular-nums text-ink-950">{formatPrice(order.total)}</div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setSelectedOrder(order)}
+                                                                className="link-arrow"
+                                                            >
+                                                                View Details <Eye size={14} aria-hidden="true" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))
                                             )}
                                         </div>
                                     )}
@@ -403,70 +373,64 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                                 <div className="space-y-6 animate-fade-in">
                                     {activeTicket ? (
                                         /* Ticket Details & Chat Conversation */
-                                        <div className="card p-6 md:p-8 bg-white border border-slate-200/60 shadow-lg rounded-3xl space-y-6">
+                                        <div className="card space-y-8 p-6 md:p-8">
                                             {/* Header */}
-                                            <div className="flex items-center justify-between border-b pb-4 border-slate-100 flex-wrap gap-3">
+                                            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-900/[0.06] pb-4">
                                                 <button
+                                                    type="button"
                                                     onClick={() => setSelectedTicket(null)}
-                                                    className="inline-flex items-center text-xs font-extrabold text-slate-500 hover:text-teal-700 transition"
+                                                    className="inline-flex items-center text-sm font-semibold text-ink-500 transition hover:text-brand-700"
                                                 >
-                                                    <ArrowLeft size={16} className="mr-1.5" /> Back to Tickets
+                                                    <ArrowLeft size={16} className="mr-1.5" aria-hidden="true" /> Back to tickets
                                                 </button>
-                                                <span className="font-bold text-slate-800 text-sm font-mono">Ticket: #TKT-{activeTicket.id}</span>
+                                                <h2 className="text-sm font-semibold tracking-tight tabular-nums text-ink-900">Ticket #TKT-{activeTicket.id}</h2>
                                             </div>
 
                                             {/* Ticket Info Card */}
-                                            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 flex flex-col md:flex-row justify-between gap-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="font-bold text-slate-800 text-base">{activeTicket.subject}</h3>
-                                                    <p className="text-xs text-slate-400">Opened on {new Date(activeTicket.created_at).toLocaleString('en-IN')}</p>
+                                            <div className="flex flex-col justify-between gap-4 rounded-2xl border border-ink-900/[0.06] bg-sand-100 p-5 md:flex-row">
+                                                <div className="min-w-0 space-y-1">
+                                                    <h3 className="break-words text-base font-bold text-ink-900">{activeTicket.subject}</h3>
+                                                    <p className="text-xs text-ink-500">Opened on {formatDate(activeTicket.created_at, { withTime: true })}</p>
                                                 </div>
                                                 <div className="flex items-center">
-                                                    <span className={`px-3 py-1 rounded-full border text-xs font-bold uppercase tracking-wider ${
-                                                        activeTicket.status === 'open' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                        activeTicket.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                        activeTicket.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                        'bg-slate-50 text-slate-500 border-slate-150'
-                                                    }`}>
-                                                        {activeTicket.status.replace('_', ' ')}
-                                                    </span>
+                                                    <StatusBadge kind="ticket" value={activeTicket.status} />
                                                 </div>
                                             </div>
 
                                             {/* Attached Document/Image preview */}
                                             {activeTicket.image_path && (
-                                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Attached Issue Image</span>
-                                                    <a href={activeTicket.image_path} target="_blank" rel="noopener noreferrer" className="inline-block group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-1 hover:shadow-md transition">
+                                                <div className="rounded-2xl border border-ink-900/[0.06] bg-sand-100 p-4">
+                                                    <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">Attached Issue Image</span>
+                                                    <a href={activeTicket.image_path} target="_blank" rel="noopener noreferrer" className="group relative inline-block overflow-hidden rounded-xl border border-ink-900/[0.06] bg-white p-1 transition hover:shadow-md">
                                                         <img src={activeTicket.image_path} alt="Support attachment" className="max-h-48 rounded-lg object-contain" />
-                                                        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1.5">
-                                                            <Eye size={16} /> View Full Image
+                                                        <div className="absolute inset-0 flex items-center justify-center gap-1.5 bg-ink-950/40 text-xs font-semibold text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                                                            <Eye size={16} aria-hidden="true" /> View Full Image
                                                         </div>
                                                     </a>
                                                 </div>
                                             )}
 
                                             {/* Message bubbles thread */}
-                                            <div className="space-y-4 pt-4 border-t border-slate-100 max-h-[450px] overflow-y-auto pr-2">
-                                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Conversation History</h4>
-                                                
+                                            <div className="max-h-[450px] space-y-4 overflow-y-auto border-t border-ink-900/[0.06] pr-2 pt-4">
+                                                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.14em] text-ink-500">Conversation History</h3>
+
                                                 {activeTicket.messages?.map((msg) => {
                                                     const isAdminMsg = msg.user?.role === 'admin';
                                                     const isMe = !isAdminMsg && (msg.user_id === auth.user.id);
                                                     const senderName = isAdminMsg ? 'Support Team' : (isMe ? 'You' : msg.user?.name || 'User');
-                                                    
+
                                                     return (
                                                         <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                                                            <div className="flex items-center gap-1.5 mb-1 px-1">
-                                                                <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">{senderName}</span>
-                                                                <span className="text-[9px] text-slate-400">• {new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
+                                                            <div className="mb-1 flex items-center gap-1.5 px-1">
+                                                                <span className="text-xs font-semibold uppercase tracking-wider text-ink-500">{senderName}</span>
+                                                                <span className="text-xs text-ink-500">• {new Date(msg.created_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
                                                             </div>
-                                                            <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-relaxed ${
-                                                                isMe 
-                                                                    ? 'bg-teal-700 text-white rounded-tr-none shadow-md shadow-teal-700/5' 
-                                                                    : 'bg-slate-100 text-slate-800 rounded-tl-none border border-slate-200/50'
+                                                            <div className={`max-w-[85%] p-4 text-sm leading-relaxed ${
+                                                                isMe
+                                                                    ? 'rounded-3xl rounded-tr-md bg-brand-700 text-white'
+                                                                    : 'rounded-3xl rounded-tl-md bg-sand-100 text-ink-800'
                                                             }`}>
-                                                                <p className="whitespace-pre-line">{msg.message}</p>
+                                                                <p className="whitespace-pre-line break-words">{msg.message}</p>
                                                             </div>
                                                         </div>
                                                     );
@@ -474,38 +438,40 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                                             </div>
 
                                             {/* Reply form */}
-                                            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 pt-6 border-t border-slate-100">
+                                            <form onSubmit={(e) => e.preventDefault()} className="space-y-3 border-t border-ink-900/[0.06] pt-6">
                                                 {activeTicket.status === 'closed' && (
-                                                    <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-xs font-medium">
-                                                        ⚠️ Note: This ticket is currently closed. Sending a reply will automatically reopen it.
+                                                    <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
+                                                        <AlertTriangle size={14} className="mt-px shrink-0" aria-hidden="true" />
+                                                        <span>Note: This ticket is currently closed. Sending a reply will automatically reopen it.</span>
                                                     </div>
                                                 )}
                                                 <div className="space-y-1">
-                                                    <label htmlFor="reply_message" className="text-xs font-bold text-slate-500 uppercase tracking-wider">Send a Response</label>
+                                                    <label htmlFor="reply_message" className="field-label">Send a response</label>
                                                     <textarea
                                                         id="reply_message"
                                                         rows="3"
                                                         value={replyMessage}
                                                         onChange={(e) => setReplyMessage(e.target.value)}
                                                         placeholder="Type your follow-up concern here..."
-                                                        className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-sm placeholder:text-slate-400"
+                                                        className="field"
                                                         required
                                                     />
                                                     {replyError && (
-                                                        <p className="text-xs font-medium text-red-655 mt-1">{replyError}</p>
+                                                        <p className="field-error" role="alert">{replyError}</p>
                                                     )}
                                                 </div>
                                                 <div className="flex justify-start">
                                                     <button
                                                         type="button"
                                                         onClick={submitReply}
-                                                        className={`btn-primary py-2 px-5 font-semibold text-xs inline-flex items-center gap-1.5 relative z-30 transition ${
-                                                            (!replyMessage.trim() || replying) 
-                                                                ? 'opacity-50 cursor-not-allowed' 
-                                                                : 'cursor-pointer hover:shadow-xl'
+                                                        aria-disabled={!replyMessage.trim() || replying}
+                                                        className={`btn-primary relative z-30 gap-1.5 !px-5 !py-2.5 text-sm ${
+                                                            (!replyMessage.trim() || replying)
+                                                                ? 'opacity-50 cursor-not-allowed'
+                                                                : 'cursor-pointer'
                                                         }`}
                                                     >
-                                                        {replying ? 'Sending...' : 'Send Message'} <Send size={12} />
+                                                        {replying ? 'Sending...' : 'Send Message'} <Send size={14} aria-hidden="true" />
                                                     </button>
                                                 </div>
                                             </form>
@@ -514,56 +480,44 @@ export default function Edit({ mustVerifyEmail, status, orders = [], tickets = [
                                         /* Ticket List View */
                                         <div className="space-y-4">
                                             {tickets.length === 0 ? (
-                                                <div className="card p-16 text-center bg-white border border-slate-200/60 shadow-sm rounded-3xl">
-                                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                                                        <MessageSquare size={32} />
+                                                <div className="card px-6 py-12 text-center sm:p-12">
+                                                    <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-brand-50 text-brand-700">
+                                                        <MessageSquare size={32} aria-hidden="true" />
                                                     </div>
-                                                    <h3 className="text-base font-bold text-slate-700 mb-1">No support tickets</h3>
-                                                    <p className="text-xs text-slate-500 mb-6 max-w-xs mx-auto">Have questions or issues? Open a support ticket using the widget at the bottom right of the page.</p>
+                                                    <h3 className="mb-1 text-base font-bold text-ink-700">No support tickets</h3>
+                                                    <p className="mx-auto mb-6 max-w-xs text-sm text-ink-500">Have questions or issues? Open a support ticket using the widget at the bottom right of the page.</p>
                                                 </div>
                                             ) : (
-                                                tickets.map((ticket) => {
-                                                    const dateStr = new Date(ticket.created_at).toLocaleDateString('en-IN', {
-                                                        year: 'numeric',
-                                                        month: 'short',
-                                                        day: 'numeric'
-                                                    });
-
-                                                    return (
-                                                        <div 
-                                                            key={ticket.id} 
-                                                            onClick={() => setSelectedTicket(ticket)}
-                                                            className="card p-5 md:p-6 bg-white border border-slate-200/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-5 hover:border-teal-300 hover:shadow-md transition-all duration-300 rounded-2xl cursor-pointer group"
-                                                        >
-                                                            <div className="space-y-2 flex-1 min-w-0">
-                                                                <div className="flex items-center gap-3 flex-wrap">
-                                                                    <span className="font-bold text-slate-800 text-sm font-mono bg-slate-50 border border-slate-200/30 px-2.5 py-0.5 rounded-lg">#TKT-{ticket.id}</span>
-                                                                    <span className={`text-[10px] font-bold px-2.5 py-0.5 border rounded-full uppercase tracking-wider ${
-                                                                        ticket.status === 'open' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                                                                        ticket.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-100' :
-                                                                        ticket.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                                                        'bg-slate-50 text-slate-500 border-slate-150'
-                                                                    }`}>
-                                                                        {ticket.status.replace('_', ' ')}
-                                                                    </span>
-                                                                </div>
-                                                                <h4 className="font-bold text-slate-800 text-sm truncate">{ticket.subject}</h4>
-                                                                <p className="text-xs text-slate-500 line-clamp-1">{ticket.description}</p>
-                                                                <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
-                                                                    <span className="flex items-center gap-1"><Calendar size={13} /> Created: {dateStr}</span>
-                                                                    <span>•</span>
-                                                                    <span>{ticket.messages?.length || 0} messages</span>
-                                                                </div>
+                                                tickets.map((ticket) => (
+                                                    <div
+                                                        key={ticket.id}
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        onClick={() => setSelectedTicket(ticket)}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTicket(ticket); } }}
+                                                        className="card card-interactive group flex cursor-pointer flex-col justify-between gap-5 p-5 sm:flex-row sm:items-center md:p-6"
+                                                    >
+                                                        <div className="min-w-0 flex-1 space-y-2">
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <span className="text-sm font-semibold tracking-tight tabular-nums text-ink-900">#TKT-{ticket.id}</span>
+                                                                <StatusBadge kind="ticket" value={ticket.status} />
                                                             </div>
-
-                                                            <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-0 border-slate-100 flex-shrink-0">
-                                                                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-teal-700 group-hover:text-teal-900 group-hover:underline transition">
-                                                                    Open Chat <Eye size={14} />
-                                                                </span>
+                                                            <h4 className="truncate text-sm font-bold text-ink-900">{ticket.subject}</h4>
+                                                            <p className="line-clamp-1 text-xs text-ink-500">{ticket.description}</p>
+                                                            <div className="flex flex-wrap items-center gap-3 text-xs text-ink-500">
+                                                                <span className="flex items-center gap-1"><Calendar size={13} aria-hidden="true" /> Created: {formatDate(ticket.created_at)}</span>
+                                                                <span aria-hidden="true">•</span>
+                                                                <span>{ticket.messages?.length || 0} messages</span>
                                                             </div>
                                                         </div>
-                                                    );
-                                                })
+
+                                                        <div className="flex flex-shrink-0 items-center justify-between gap-6 border-t border-ink-900/[0.06] pt-3 sm:justify-end sm:border-0 sm:pt-0">
+                                                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-700 transition group-hover:text-brand-900 group-hover:underline">
+                                                                Open Chat <Eye size={14} aria-hidden="true" />
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))
                                             )}
                                         </div>
                                     )}

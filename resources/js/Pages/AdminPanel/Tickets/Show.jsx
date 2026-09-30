@@ -47,17 +47,17 @@ export default function Show({ ticket }) {
 
     const getStatusStyle = (status) => {
         const styles = {
-            open: 'bg-amber-50 text-amber-707 border-amber-200',
-            in_progress: 'bg-blue-50 text-blue-707 border-blue-200',
-            resolved: 'bg-emerald-50 text-emerald-707 border-emerald-200',
-            closed: 'bg-slate-55 text-slate-500 border-slate-200',
+            open: 'bg-amber-50 text-amber-700 border-amber-200',
+            in_progress: 'bg-blue-50 text-blue-700 border-blue-200',
+            resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            closed: 'bg-slate-50 text-slate-500 border-slate-200',
         };
-        return styles[status] || 'bg-slate-50 text-slate-705 border-slate-200';
+        return styles[status] || 'bg-slate-50 text-slate-700 border-slate-200';
     };
 
     return (
         <AdminLayout>
-            <Head title={`Support Ticket #TKT-${ticket.id} — AdminPanel`} />
+            <Head title={`Support Ticket #TKT-${ticket.id}`} />
 
             <div className="p-6 space-y-6 max-w-5xl mx-auto">
                 {/* Back button */}
@@ -94,7 +94,7 @@ export default function Show({ ticket }) {
                                             statusForm.data.status === 'open' ? 'bg-amber-50 text-amber-700 border-amber-100' :
                                             statusForm.data.status === 'in_progress' ? 'bg-blue-50 text-blue-700 border-blue-100' :
                                             statusForm.data.status === 'resolved' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                                            'bg-slate-50 text-slate-500 border-slate-150'
+                                            'bg-slate-50 text-slate-500 border-slate-200'
                                         }`}
                                     >
                                         <option value="open">Open</option>
@@ -163,14 +163,14 @@ export default function Show({ ticket }) {
                                         required
                                     />
                                     {replyForm.errors.message && (
-                                        <p className="text-xs font-semibold text-red-655 mt-1">{replyForm.errors.message}</p>
+                                        <p className="text-xs font-semibold text-red-700 mt-1">{replyForm.errors.message}</p>
                                     )}
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2">
                                     {/* Select status on response */}
                                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                                        <span className="text-[10px] font-extrabold text-slate-450 uppercase tracking-wider whitespace-nowrap">Next Status:</span>
+                                        <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider whitespace-nowrap">Next Status:</span>
                                         <select
                                             value={replyForm.data.status}
                                             onChange={(e) => replyForm.setData('status', e.target.value)}
@@ -219,7 +219,7 @@ export default function Show({ ticket }) {
                                 </div>
                                 <div className="pt-2 border-t border-slate-100">
                                     <span className="text-slate-400 font-bold block mb-1">Customer Verification</span>
-                                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150 flex items-center gap-2">
+                                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex items-center gap-2">
                                         <Clock size={14} className="text-slate-500" />
                                         <div className="text-[10px] leading-tight text-slate-600">
                                             User ID: <span className="font-mono font-bold">#{ticket.user_id}</span>

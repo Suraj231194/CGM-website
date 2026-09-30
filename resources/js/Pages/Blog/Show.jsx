@@ -9,6 +9,10 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, Info, ShieldCheck, User } from 
 const readingMinutes = (html = '') => Math.max(1, Math.round(html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length / 220));
 
 export default function Show({ post, relatedPosts = [] }) {
+    // Alternate the cover mirror within each category so the article and its related posts do not repeat.
+    const counts = {};
+    const variantOf = Object.fromEntries([post, ...relatedPosts].map((p) => [p.id, (counts[p.category] = (counts[p.category] ?? -1) + 1)]));
+
     return (
         <MainLayout>
             <Head title={post.title} />
@@ -16,8 +20,11 @@ export default function Show({ post, relatedPosts = [] }) {
             <article>
                 {/* Header */}
                 <header className="bg-aurora">
-                    <div className="container-page max-w-4xl pb-12 pt-10 md:pb-16 md:pt-14">
-                        <Breadcrumbs items={[{ label: 'Learning Center', href: '/blog' }, { label: post.category }]} />
+                    <div className="container-page max-w-[40rem] pb-12 pt-10 md:pb-16 md:pt-14">
+                        {/* Let the crumbs shrink below their 40ch cap so a long title truncates instead of widening the page on phones. */}
+                        <div className="[&_li]:min-w-0 [&_li]:max-w-full">
+                            <Breadcrumbs items={[{ label: 'Learning center', href: '/blog' }, { label: post.title }]} />
+                        </div>
                         <p className="chip-brand">{post.category}</p>
                         <h1 className="mt-5 text-balance font-display text-display-sm font-normal text-ink-950 md:text-display-md">{post.title}</h1>
                         {post.excerpt && <p className="mt-5 text-pretty text-xl leading-relaxed text-ink-500">{post.excerpt}</p>}
@@ -39,21 +46,21 @@ export default function Show({ post, relatedPosts = [] }) {
 
                 <div className="container-page max-w-5xl">
                     <div className="-mt-2 aspect-[16/8] overflow-hidden rounded-5xl shadow-soft">
-                        <BlogCover category={post.category} eager />
+                        <BlogCover category={post.category} variant={variantOf[post.id]} eager />
                     </div>
                 </div>
 
                 {/* Body */}
-                <div className="container-page max-w-3xl py-14 md:py-20">
+                <div className="container-page max-w-[40rem] py-14 md:py-20">
                     <div className="prose-content" dangerouslySetInnerHTML={{ __html: post.body }} />
 
-                    <aside className="mt-14 flex gap-4 rounded-3xl bg-sand-100 p-6 text-sm leading-relaxed text-ink-600">
+                    <div role="note" className="mt-14 flex gap-4 rounded-3xl bg-sand-100 p-6 text-sm leading-relaxed text-ink-600">
                         <Info size={18} className="mt-0.5 shrink-0 text-brand-600" aria-hidden="true" />
                         <p>This article is for general education and is not a substitute for professional medical advice. Talk to your healthcare provider before changing your diabetes management plan.</p>
-                    </aside>
+                    </div>
 
                     <Link href="/blog" className="link-arrow mt-10">
-                        <ArrowLeft size={16} aria-hidden="true" /> Back to Learning Center
+                        <ArrowLeft size={16} aria-hidden="true" /> Back to the learning center
                     </Link>
                 </div>
             </article>
@@ -63,7 +70,10 @@ export default function Show({ post, relatedPosts = [] }) {
                 <section className="border-t border-ink-900/[0.06] bg-white">
                     <div className="container-page section-pad">
                         <div className="mb-10 flex items-end justify-between gap-6">
-                            <h2 className="section-heading">Related Articles</h2>
+                            <div>
+                                <p className="eyebrow mb-4">Learning center</p>
+                                <h2 className="section-heading">Related articles</h2>
+                            </div>
                             <Link href="/blog" className="link-arrow hidden sm:inline-flex">All articles <ArrowRight size={16} aria-hidden="true" /></Link>
                         </div>
                         <div className="grid gap-8 md:grid-cols-3">
@@ -71,11 +81,11 @@ export default function Show({ post, relatedPosts = [] }) {
                                 <Reveal key={rp.id} delay={i * 100}>
                                     <Link href={`/blog/${rp.slug}`} className="group block">
                                         <div className="aspect-[16/10] overflow-hidden rounded-4xl">
-                                            <BlogCover category={rp.category} className="transition-transform duration-700 ease-premium group-hover:scale-105" />
+                                            <BlogCover category={rp.category} variant={variantOf[rp.id]} className="transition-transform duration-700 ease-premium group-hover:scale-105" />
                                         </div>
-                                        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">{rp.category}</p>
-                                        <h3 className="mt-2 line-clamp-2 text-lg font-semibold leading-snug text-ink-950 transition-colors group-hover:text-brand-700">{rp.title}</h3>
-                                        <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-500">{rp.excerpt}</p>
+                                        <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">{rp.category}</p>
+                                        <h3 className="mt-2 line-clamp-2 text-balance text-xl font-semibold leading-snug tracking-tight text-ink-950 transition-colors group-hover:text-brand-700">{rp.title}</h3>
+                                        <p className="mt-2 line-clamp-2 text-[0.9375rem] leading-relaxed text-ink-500">{rp.excerpt}</p>
                                     </Link>
                                 </Reveal>
                             ))}
@@ -85,6 +95,7 @@ export default function Show({ post, relatedPosts = [] }) {
             )}
 
             <CtaBand
+                tone="light"
                 eyebrow="Keep exploring"
                 title="See the technology behind the insight."
                 text="Explore our connected devices, or talk to our team about which one fits your day."

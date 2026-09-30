@@ -19,7 +19,7 @@ export default function PaymentSettings({ settings }) {
 
     return (
         <AdminLayout>
-            <Head title="Payment Settings — BiogenixCGM" />
+            <Head title="Payment Settings" />
 
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-800">Payment Gateways</h1>
@@ -40,7 +40,7 @@ export default function PaymentSettings({ settings }) {
                                 type="text"
                                 value={data.upi_id}
                                 onChange={(e) => setData('upi_id', e.target.value)}
-                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition ${errors.upi_id ? 'border-red-300' : ''}`}
+                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition ${errors.upi_id ? 'border-red-300' : ''}`}
                                 placeholder="merchant@upi"
                                 required
                             />
@@ -53,7 +53,7 @@ export default function PaymentSettings({ settings }) {
                                 value={data.payment_instructions}
                                 onChange={(e) => setData('payment_instructions', e.target.value)}
                                 rows={5}
-                                className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition"
+                                className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition"
                                 placeholder="Explain UPI verification steps, e.g., 'Please pay the exact grand total. Scan the QR code or transfer to UPI. Complete payment, take a note of the 12-digit transaction ID / reference number, and paste it on checkout.'"
                             />
                             {errors.payment_instructions && <p className="text-red-500 text-xs mt-1">{errors.payment_instructions}</p>}

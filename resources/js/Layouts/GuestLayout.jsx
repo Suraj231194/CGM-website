@@ -10,10 +10,10 @@ export default function GuestLayout({ children }) {
             <aside className="bg-radiance grain relative hidden overflow-hidden p-12 text-white lg:flex lg:flex-col lg:justify-between">
                 <Logo tone="dark" />
                 <div className="relative max-w-md">
-                    <p className="font-display text-4xl leading-tight">Your glucose, your day, one calm view.</p>
+                    <p className="font-display text-display-sm">Your glucose, your day, one calm view.</p>
                     <div className="mt-10 rounded-4xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur-sm">
                         <GlucoseTrace tone="dark" axis={false} className="h-32" id="guest-trace" />
-                        <p className="mt-4 text-xs text-white/45">Illustrative data</p>
+                        <p className="mt-4 text-xs text-white/60">Illustrative data</p>
                     </div>
                 </div>
                 <p className="flex items-center gap-2 text-sm text-white/55">

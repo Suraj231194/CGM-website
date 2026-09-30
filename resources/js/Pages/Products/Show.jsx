@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Head, Link, usePage, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import FeatureCard from '@/Components/FeatureCard';
+import { ICONS as FEATURE_ICONS } from '@/Components/FeatureCard';
 import FaqAccordion from '@/Components/FaqAccordion';
 import SectionHeader from '@/Components/SectionHeader';
 import SafetyNotice from '@/Components/SafetyNotice';
@@ -14,26 +14,25 @@ import {
     Headphones,
     Loader2,
     Lock,
+    Mail,
     Minus,
     Play,
     Plus,
     ShieldCheck,
     ShoppingBag,
-    X,
+    Sparkles,
 } from 'lucide-react';
 
 const formatPrice = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
 
-export default function Show({ product }) {
-    const { auth } = usePage().props;
-    const user = auth?.user;
+const typeLabels = { manual: 'Manual', guide: 'Guide', video: 'Video', document: 'Document' };
 
+export default function Show({ product }) {
     const [quantity, setQuantity] = useState(1);
     const [addingToCart, setAddingToCart] = useState(false);
-    const [authModalOpen, setAuthModalOpen] = useState(false);
     const [showStickyBar, setShowStickyBar] = useState(false);
+    const [buyAreaVisible, setBuyAreaVisible] = useState(false);
     const buyAreaRef = useRef(null);
-    const modalCloseRef = useRef(null);
 
     const specs = product.specifications || [];
     const specGroups = specs.reduce((acc, spec) => {
@@ -42,12 +41,8 @@ export default function Show({ product }) {
         return acc;
     }, {});
 
+    // Guests add to cart as they do everywhere else; checkout itself asks them to sign in.
     const handleAddToCart = (shouldOpenCheckout = false) => {
-        if (!user) {
-            setAuthModalOpen(true);
-            return;
-        }
-
         setAddingToCart(true);
         router.post('/cart/add', {
             product_id: product.id,
@@ -66,26 +61,43 @@ export default function Show({ product }) {
         });
     };
 
-    const onSale = product.sale_price && product.sale_price > 0;
-    const effectivePrice = onSale ? product.sale_price : product.price;
+    // The cart charges the sale price whenever one is set; the old price is struck only when it is a real saving.
+    const hasSalePrice = Number(product.sale_price) > 0;
+    const effectivePrice = hasSalePrice ? product.sale_price : product.price;
+    const saving = hasSalePrice ? Number(product.price) - Number(product.sale_price) : 0;
+    const onSale = saving > 0;
+    const inStock = product.stock == null || Number(product.stock) > 0;
 
     // A slim buy bar follows the reader on small screens once the main buttons scroll away.
     useEffect(() => {
         const el = buyAreaRef.current;
         if (!el || typeof IntersectionObserver === 'undefined') return undefined;
-        const observer = new IntersectionObserver(([entry]) => setShowStickyBar(!entry.isIntersecting && entry.boundingClientRect.top < 0));
+        const observer = new IntersectionObserver(([entry]) => {
+            setShowStickyBar(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+            setBuyAreaVisible(entry.isIntersecting);
+        });
         observer.observe(el);
         return () => observer.disconnect();
     }, []);
 
-    // The sign-in prompt behaves like a dialog: focus moves in, and Escape closes it.
+    // While the buy bar is up, the support bubble docks above it and focused links scroll clear of it.
+    // The bar only exists below md, so wider screens keep the default offset.
     useEffect(() => {
-        if (!authModalOpen) return undefined;
-        modalCloseRef.current?.focus();
-        const onKey = (e) => e.key === 'Escape' && setAuthModalOpen(false);
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [authModalOpen]);
+        const r = document.documentElement;
+        const phone = window.matchMedia?.('(max-width: 767.98px)');
+        const apply = () => {
+            const docked = showStickyBar && (phone ? phone.matches : true);
+            r.style.setProperty('--dock-offset', docked ? '4.5rem' : '0px');
+            r.style.scrollPaddingBottom = docked ? '96px' : '';
+        };
+        apply();
+        phone?.addEventListener?.('change', apply);
+        return () => {
+            phone?.removeEventListener?.('change', apply);
+            r.style.removeProperty('--dock-offset');
+            r.style.scrollPaddingBottom = '';
+        };
+    }, [showStickyBar]);
 
     const sections = [
         { id: 'overview', label: 'Overview', show: !!product.long_description },
@@ -98,21 +110,21 @@ export default function Show({ product }) {
     const highlights = (product.features || []).slice(0, 3);
 
     return (
-        <MainLayout>
+        <MainLayout hideSupportLauncher={buyAreaVisible}>
             <Head title={product.name} />
 
-            {/* Product Hero */}
-            <section className="bg-aurora relative overflow-hidden">
-                <div className="container-page grid gap-10 pb-16 pt-8 md:pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-24">
-                    <div className="lg:col-span-2">
+            {/* Product Hero (overflow-clip where supported, so the sticky image is not trapped by overflow-hidden) */}
+            <section className="bg-aurora relative overflow-hidden supports-[overflow:clip]:overflow-clip">
+                <div className="container-page grid gap-10 pb-16 pt-8 md:grid-cols-2 md:gap-x-8 md:pt-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:pb-24">
+                    <div className="md:col-span-2">
                         <Breadcrumbs items={[{ label: 'Products', href: '/products' }, { label: product.name }]} />
                     </div>
 
                     {/* Image Showcase */}
-                    <div className="product-stage relative aspect-square rounded-5xl lg:sticky lg:top-24 lg:self-start">
+                    <div className="product-stage relative aspect-square rounded-5xl md:sticky md:top-24 md:self-start">
                         {onSale && (
-                            <span className="absolute left-6 top-6 z-10 rounded-full bg-ink-950 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wider text-white">
-                                Offer
+                            <span className="absolute left-6 top-6 z-10 rounded-full bg-brand-800 px-3.5 py-1.5 text-xs font-semibold text-white">
+                                Save {formatPrice(saving)}
                             </span>
                         )}
                         <img
@@ -121,16 +133,20 @@ export default function Show({ product }) {
                             width="1024"
                             height="1024"
                             fetchpriority="high"
-                            className="h-[86%] w-auto object-contain transition duration-700 ease-premium hover:scale-105"
+                            className={`h-[86%] w-auto object-contain ${product.slug === 'horizon-smart-pen' ? 'scale-[1.15]' : 'scale-[1.45]'}`}
                         />
                     </div>
 
                     {/* Order Specifications Panel */}
                     <div className="flex flex-col justify-center">
-                        <span className="chip-brand w-fit">
-                            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" /> In Stock
-                        </span>
-                        <h1 className="mt-5 font-display text-display-sm font-normal text-ink-950 sm:text-display-md">{product.name}</h1>
+                        {inStock ? (
+                            <span className="chip-brand w-fit !text-sm">
+                                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden="true" /> In stock
+                            </span>
+                        ) : (
+                            <span className="chip w-fit !text-sm">Currently unavailable</span>
+                        )}
+                        <h1 className="mt-5 text-balance font-display text-display-sm font-normal text-ink-950 sm:text-display-md xl:text-display-lg">{product.name}</h1>
                         <p className="mt-5 text-pretty text-lg leading-relaxed text-ink-500">{product.short_description}</p>
 
                         {highlights.length > 0 && (
@@ -148,10 +164,16 @@ export default function Show({ product }) {
 
                         <div className="mt-8 rounded-4xl border border-ink-900/[0.07] bg-white p-6 shadow-soft sm:p-7">
                             {/* Price display */}
-                            <div className="flex items-baseline gap-3">
-                                <span className="font-display text-4xl text-ink-950">{formatPrice(effectivePrice)}</span>
+                            <div className="flex flex-wrap items-baseline gap-3">
+                                <span className="font-display text-4xl text-ink-950">
+                                    {onSale && <span className="sr-only">Sale price </span>}
+                                    {formatPrice(effectivePrice)}
+                                </span>
                                 {onSale && (
-                                    <span className="text-lg text-ink-300 line-through">{formatPrice(product.price)}</span>
+                                    <del className="text-lg text-ink-400">
+                                        <span className="sr-only">Original price </span>
+                                        {formatPrice(product.price)}
+                                    </del>
                                 )}
                             </div>
 
@@ -182,26 +204,32 @@ export default function Show({ product }) {
                             </div>
 
                             {/* Buying Actions */}
-                            <div ref={buyAreaRef} className="mt-6 grid gap-3 sm:grid-cols-2">
+                            <div ref={buyAreaRef} className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
                                 <button
                                     type="button"
                                     onClick={() => handleAddToCart(true)}
-                                    disabled={addingToCart}
+                                    disabled={addingToCart || !inStock}
                                     className="btn-primary gap-2 !py-4"
                                 >
-                                    {addingToCart ? <Loader2 className="animate-spin" size={18} aria-label="Adding to cart" /> : 'Buy Now'}
+                                    {addingToCart ? <Loader2 className="animate-spin" size={18} aria-label="Adding to cart" /> : 'Buy now'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => handleAddToCart(false)}
-                                    disabled={addingToCart}
+                                    disabled={addingToCart || !inStock}
                                     className="btn-secondary gap-2 !py-4"
                                 >
-                                    <ShoppingBag size={18} aria-hidden="true" /> Add to Cart
+                                    <ShoppingBag size={18} aria-hidden="true" /> Add to cart
                                 </button>
                             </div>
 
-                            <ul className="mt-6 grid gap-3 border-t border-ink-900/[0.06] pt-6 text-sm text-ink-500 sm:grid-cols-2">
+                            {!inStock && (
+                                <Link href="/contact" className="link-arrow mt-4">
+                                    Request information <ArrowRight size={16} aria-hidden="true" />
+                                </Link>
+                            )}
+
+                            <ul className="mt-6 grid gap-3 border-t border-ink-900/[0.06] pt-6 text-sm text-ink-500 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
                                 <li className="flex items-center gap-2"><Lock size={15} className="text-brand-600" aria-hidden="true" /> Secure checkout</li>
                                 <li className="flex items-center gap-2"><Headphones size={15} className="text-brand-600" aria-hidden="true" /> 24/7 expert support</li>
                             </ul>
@@ -223,11 +251,11 @@ export default function Show({ product }) {
                 <nav aria-label="On this page" className="glass-header sticky top-16 z-30 hidden md:block">
                     <div className="container-page flex h-14 items-center gap-1 overflow-x-auto">
                         {sections.map((s) => (
-                            <a key={s.id} href={`#${s.id}`} className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-ink-500 transition-colors hover:bg-white hover:text-ink-950">
+                            <a key={s.id} href={`#${s.id}`} className="shrink-0 rounded-full px-4 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-white hover:text-ink-950">
                                 {s.label}
                             </a>
                         ))}
-                        <button type="button" onClick={() => handleAddToCart(true)} className="btn-primary ml-auto !px-5 !py-2 text-sm">
+                        <button type="button" onClick={() => handleAddToCart(true)} disabled={addingToCart || !inStock} className="btn-primary ml-auto !px-5 !py-2 text-sm">
                             Buy now · {formatPrice(effectivePrice)}
                         </button>
                     </div>
@@ -240,7 +268,7 @@ export default function Show({ product }) {
                     <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
                         <Reveal>
                             <p className="eyebrow mb-4">Overview</p>
-                            <h2 className="section-heading">Meet the {product.name}.</h2>
+                            <h2 className="section-heading-split">Meet the {product.name}.</h2>
                         </Reveal>
                         <Reveal delay={120}>
                             <div className="prose-content" dangerouslySetInnerHTML={{ __html: product.long_description }} />
@@ -253,13 +281,25 @@ export default function Show({ product }) {
             {product.features && product.features.length > 0 && (
                 <section id="features" className="bg-white">
                     <div className="container-page section-pad">
-                        <SectionHeader eyebrow="Key features" title="Key Features" subtitle={`What makes the ${product.name} stand out.`} centered />
-                        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                            {product.features.map((f, i) => (
-                                <Reveal key={f.id} delay={(i % 3) * 100} className="h-full">
-                                    <FeatureCard icon={f.icon} title={f.title} description={f.description} />
-                                </Reveal>
-                            ))}
+                        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+                            <Reveal className="lg:sticky lg:top-40 lg:self-start">
+                                <p className="eyebrow mb-4">Key features</p>
+                                <h2 className="section-heading-split">What sets the {product.name} apart.</h2>
+                            </Reveal>
+                            <ul className="divide-y divide-ink-900/10 border-y border-ink-900/10">
+                                {product.features.map((f, i) => {
+                                    const Icon = FEATURE_ICONS[f.icon] || Sparkles;
+                                    return (
+                                        <Reveal as="li" key={f.id} delay={(i % 3) * 80} className="grid grid-cols-[2.5rem_1fr] gap-5 py-7">
+                                            <Icon size={22} className="mt-0.5 text-brand-600" aria-hidden="true" />
+                                            <div>
+                                                <h3 className="text-lg font-semibold tracking-tight text-ink-950">{f.title}</h3>
+                                                <p className="mt-2 text-[0.9375rem] leading-relaxed text-ink-500">{f.description}</p>
+                                            </div>
+                                        </Reveal>
+                                    );
+                                })}
+                            </ul>
                         </div>
                     </div>
                 </section>
@@ -268,7 +308,7 @@ export default function Show({ product }) {
             {/* Technical Specifications */}
             {Object.keys(specGroups).length > 0 && (
                 <section id="specifications" className="container-page section-pad">
-                    <SectionHeader eyebrow="Specifications" title="Technical Specifications" subtitle="The details, measured and documented." />
+                    <SectionHeader eyebrow={product.name} title="Technical specifications" subtitle="The details, measured and documented." />
                     <div className="grid gap-6 md:grid-cols-2">
                         {Object.entries(specGroups).map(([group, items], i) => (
                             <Reveal key={group} delay={(i % 2) * 100} className="rounded-4xl border border-ink-900/[0.06] bg-white p-7 md:p-8">
@@ -294,7 +334,7 @@ export default function Show({ product }) {
                         <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
                             <Reveal>
                                 <p className="eyebrow mb-4">Questions</p>
-                                <h2 className="section-heading">{product.name} FAQs</h2>
+                                <h2 className="section-heading-split">{product.name} FAQs</h2>
                                 <p className="mt-4 text-lg leading-relaxed text-ink-500">Can&rsquo;t find your answer? Our team is available 24/7.</p>
                                 <Link href="/support" className="link-arrow mt-6">
                                     Visit support <ArrowRight size={16} aria-hidden="true" />
@@ -312,14 +352,14 @@ export default function Show({ product }) {
             {product.resources && product.resources.length > 0 && (
                 <section id="resources" className="container-page section-pad">
                     <SectionHeader
-                        eyebrow="Resources"
-                        title="Resources & Downloads"
+                        eyebrow="Support"
+                        title="Resources and downloads"
                         action={<Link href="/resources" className="link-arrow">All resources <ArrowRight size={16} aria-hidden="true" /></Link>}
                     />
                     <div className="grid gap-4 md:grid-cols-3">
                         {product.resources.map((r, i) => {
                             const href = r.file_url && r.file_url !== '#' ? r.file_url : r.external_url && r.external_url !== '#' ? r.external_url : null;
-                            const Icon = r.type === 'video' ? Play : Download;
+                            const Icon = !href ? Mail : r.type === 'video' ? Play : Download;
                             const body = (
                                 <>
                                     <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700 transition-colors duration-500 group-hover:bg-brand-700 group-hover:text-white">
@@ -327,18 +367,18 @@ export default function Show({ product }) {
                                     </span>
                                     <span className="min-w-0">
                                         <span className="block font-semibold text-ink-900">{r.title}</span>
-                                        <span className="mt-1 block text-sm capitalize text-ink-400">{r.type}{!href && ' · available on request'}</span>
+                                        <span className="mt-1 block text-sm text-ink-400">{typeLabels[r.type] || r.type}{!href && ' · Request a copy'}</span>
                                     </span>
                                 </>
                             );
                             return (
-                                <Reveal key={r.id} delay={i * 80}>
+                                <Reveal key={r.id} delay={i * 80} className="h-full">
                                     {href ? (
-                                        <a href={href} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-5 transition duration-500 ease-premium hover:-translate-y-1 hover:shadow-lift">
+                                        <a href={href} target="_blank" rel="noopener noreferrer" className="group flex h-full items-center gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-5 transition duration-500 ease-premium hover:-translate-y-1 hover:shadow-lift">
                                             {body}
                                         </a>
                                     ) : (
-                                        <Link href="/contact" className="group flex items-center gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-5 transition duration-500 ease-premium hover:-translate-y-1 hover:shadow-lift">
+                                        <Link href="/contact" className="group flex h-full items-center gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-5 transition duration-500 ease-premium hover:-translate-y-1 hover:shadow-lift">
                                             {body}
                                         </Link>
                                     )}
@@ -351,9 +391,9 @@ export default function Show({ product }) {
 
             <SafetyNotice id="product-safety" productName={product.name} />
 
-            {/* Mobile sticky buy bar (leaves room on the right for the support button) */}
+            {/* Mobile sticky buy bar (the support bubble docks above it through --dock-offset) */}
             <div
-                className={`fixed inset-x-0 bottom-0 z-30 border-t border-ink-900/[0.06] bg-canvas/95 py-3 pl-5 pr-24 backdrop-blur-xl transition-transform duration-500 ease-premium md:hidden ${showStickyBar ? 'translate-y-0' : 'translate-y-full'}`}
+                className={`fixed inset-x-0 bottom-0 z-30 border-t border-ink-900/[0.06] bg-canvas/95 py-3 pl-5 pr-5 backdrop-blur-xl transition-transform duration-500 ease-premium md:hidden ${showStickyBar ? 'translate-y-0' : 'translate-y-full'}`}
                 aria-hidden={!showStickyBar}
             >
                 <div className="flex items-center justify-between gap-3">
@@ -361,45 +401,11 @@ export default function Show({ product }) {
                         <p className="truncate text-sm font-semibold text-ink-900">{product.name}</p>
                         <p className="text-sm text-ink-500">{formatPrice(effectivePrice)}</p>
                     </div>
-                    <button type="button" onClick={() => handleAddToCart(true)} disabled={addingToCart} tabIndex={showStickyBar ? 0 : -1} className="btn-primary shrink-0 !px-5 !py-2.5 text-sm">
+                    <button type="button" onClick={() => handleAddToCart(true)} disabled={addingToCart || !inStock} tabIndex={showStickyBar ? 0 : -1} className="btn-primary shrink-0 !px-5 !py-2.5 text-sm">
                         Buy now
                     </button>
                 </div>
             </div>
-
-            {/* Guest Authentication Prompt Modal */}
-            {authModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="fixed inset-0 bg-ink-950/50 backdrop-blur-sm" onClick={() => setAuthModalOpen(false)} />
-                    <div
-                        role="dialog"
-                        aria-modal="true"
-                        aria-labelledby="auth-modal-title"
-                        className="relative z-10 w-full max-w-md animate-fade-in-up rounded-4xl bg-white p-8 shadow-lift sm:p-10"
-                    >
-                        <button
-                            ref={modalCloseRef}
-                            type="button"
-                            onClick={() => setAuthModalOpen(false)}
-                            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-ink-400 hover:bg-ink-900/5 hover:text-ink-700"
-                            aria-label="Close"
-                        >
-                            <X size={18} aria-hidden="true" />
-                        </button>
-                        <div className="mb-7 text-center">
-                            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                                <ShoppingBag size={24} aria-hidden="true" />
-                            </span>
-                            <h3 id="auth-modal-title" className="mt-5 font-display text-3xl text-ink-950">Sign in to continue</h3>
-                            <p className="mt-2 text-sm leading-relaxed text-ink-500">To complete your purchase with secure checkout, please log in to your account or register a new account.</p>
-                        </div>
-                        <div className="grid gap-3">
-                            <Link href="/login" className="btn-primary w-full">Log In</Link>
-                            <Link href="/register" className="btn-secondary w-full">Create Account</Link>
-                        </div>
-                    </div>
-                </div>
-            )}
         </MainLayout>
     );
 }

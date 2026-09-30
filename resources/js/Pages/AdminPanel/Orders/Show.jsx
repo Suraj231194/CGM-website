@@ -43,7 +43,7 @@ export default function Show({ order }) {
 
     return (
         <AdminLayout>
-            <Head title={`Manage Order #${order.order_number} — BiogenixCGM`} />
+            <Head title={`Manage Order #${order.order_number}`} />
 
             <div className="mb-8 flex items-center justify-between">
                 <div>
@@ -78,7 +78,7 @@ export default function Show({ order }) {
                                         <div className="text-xs text-slate-400 mt-1">₹{Number(item.price).toLocaleString('en-IN')} each</div>
                                     </div>
                                     <div className="text-right">
-                                        <div className="text-sm font-bold text-slate-850">₹{Number(item.price * item.quantity).toLocaleString('en-IN')}</div>
+                                        <div className="text-sm font-bold text-slate-900">₹{Number(item.price * item.quantity).toLocaleString('en-IN')}</div>
                                         <div className="text-xs text-slate-400 mt-1">Qty: {item.quantity}</div>
                                     </div>
                                 </div>
@@ -105,7 +105,7 @@ export default function Show({ order }) {
                                     <p><span className="text-slate-400 font-semibold">Phone:</span> {order.shipping_address.phone}</p>
                                     <p><span className="text-slate-400 font-semibold">Email:</span> {order.shipping_address.email}</p>
                                     {order.notes && (
-                                        <div className="mt-3 p-3 bg-slate-50 border border-slate-150 rounded-lg text-xs italic">
+                                        <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-xs italic">
                                             <span className="font-bold text-slate-400 block uppercase tracking-wide not-italic mb-1">Order Notes</span>
                                             "{order.notes}"
                                         </div>
@@ -130,7 +130,7 @@ export default function Show({ order }) {
                                 <select
                                     value={data.status}
                                     onChange={(e) => setData('status', e.target.value)}
-                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition"
+                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition"
                                 >
                                     {statusOptions.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -143,7 +143,7 @@ export default function Show({ order }) {
                                 <select
                                     value={data.payment_status}
                                     onChange={(e) => setData('payment_status', e.target.value)}
-                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition"
+                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition"
                                 >
                                     {paymentStatusOptions.map((opt) => (
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -190,15 +190,15 @@ export default function Show({ order }) {
                         <div className="space-y-2.5 text-sm">
                             <div className="flex justify-between text-slate-500">
                                 <span>Items Subtotal</span>
-                                <span className="font-medium text-slate-850">₹{Number(order.subtotal).toLocaleString('en-IN')}</span>
+                                <span className="font-medium text-slate-900">₹{Number(order.subtotal).toLocaleString('en-IN')}</span>
                             </div>
                             <div className="flex justify-between text-slate-500">
                                 <span>Shipping Fee</span>
-                                <span className="font-medium text-slate-850">₹{Number(order.shipping_charge).toLocaleString('en-IN')}</span>
+                                <span className="font-medium text-slate-900">₹{Number(order.shipping_charge).toLocaleString('en-IN')}</span>
                             </div>
                             <hr className="border-slate-100 my-1.5" />
                             <div className="flex justify-between items-baseline pt-1">
-                                <span className="font-bold text-slate-850">Total Revenue</span>
+                                <span className="font-bold text-slate-900">Total Revenue</span>
                                 <span className="font-extrabold text-teal-700 text-xl">₹{Number(order.total).toLocaleString('en-IN')}</span>
                             </div>
                         </div>

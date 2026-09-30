@@ -20,15 +20,17 @@ export default function ConfirmPassword() {
 
     return (
         <GuestLayout>
-            <Head title="Confirm Password" />
+            <Head title="Confirm password" />
 
-            <div className="mb-4 text-sm text-gray-600">
+            <h1 className="text-center font-display text-3xl font-normal text-ink-950">Confirm your password</h1>
+
+            <p className="mb-6 mt-2 text-center text-sm text-ink-500">
                 This is a secure area of the application. Please confirm your
                 password before continuing.
-            </div>
+            </p>
 
             <form onSubmit={submit}>
-                <div className="mt-4">
+                <div>
                     <InputLabel htmlFor="password" value="Password" />
 
                     <TextInput
@@ -36,16 +38,19 @@ export default function ConfirmPassword() {
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
+                        className="mt-1.5 block w-full"
+                        autoComplete="current-password"
                         isFocused={true}
+                        aria-invalid={errors.password ? 'true' : undefined}
+                        aria-describedby={errors.password ? 'password-error' : undefined}
                         onChange={(e) => setData('password', e.target.value)}
                     />
 
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError id="password-error" message={errors.password} className="mt-2" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    <PrimaryButton className="ms-4" disabled={processing}>
+                <div className="mt-6">
+                    <PrimaryButton className="w-full" disabled={processing}>
                         Confirm
                     </PrimaryButton>
                 </div>

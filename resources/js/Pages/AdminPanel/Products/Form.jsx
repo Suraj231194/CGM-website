@@ -42,7 +42,7 @@ export default function Form({ product }) {
 
     return (
         <AdminLayout>
-            <Head title={`${isEdit ? 'Edit' : 'Add'} Product — BiogenixCGM`} />
+            <Head title={`${isEdit ? 'Edit' : 'Add'} Product`} />
 
             <div className="mb-8 flex items-center justify-between">
                 <div>

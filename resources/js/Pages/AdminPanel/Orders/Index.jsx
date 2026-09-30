@@ -44,7 +44,7 @@ export default function Index({ orders, filters }) {
 
     return (
         <AdminLayout>
-            <Head title="Manage Orders — BiogenixCGM" />
+            <Head title="Manage Orders" />
 
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-800">Orders Management</h1>

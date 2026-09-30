@@ -61,7 +61,7 @@ export default function Shipping({ zones }) {
 
     return (
         <AdminLayout>
-            <Head title="Shipping Settings — BiogenixCGM" />
+            <Head title="Shipping Settings" />
 
             <div className="mb-8">
                 <h1 className="text-3xl font-extrabold text-slate-800">Shipping Configurations</h1>
@@ -83,7 +83,7 @@ export default function Shipping({ zones }) {
                                 type="text"
                                 value={data.zone}
                                 onChange={(e) => setData('zone', e.target.value)}
-                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition ${errors.zone ? 'border-red-300' : ''}`}
+                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition ${errors.zone ? 'border-red-300' : ''}`}
                                 placeholder="e.g. Uttar Pradesh (UP)"
                                 required
                             />
@@ -98,7 +98,7 @@ export default function Shipping({ zones }) {
                                     maxLength={6}
                                     value={data.min_pincode}
                                     onChange={(e) => setData('min_pincode', e.target.value)}
-                                    className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition ${errors.min_pincode ? 'border-red-300' : ''}`}
+                                    className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition ${errors.min_pincode ? 'border-red-300' : ''}`}
                                     placeholder="200000"
                                     required
                                 />
@@ -112,7 +112,7 @@ export default function Shipping({ zones }) {
                                     maxLength={6}
                                     value={data.max_pincode}
                                     onChange={(e) => setData('max_pincode', e.target.value)}
-                                    className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition ${errors.max_pincode ? 'border-red-300' : ''}`}
+                                    className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition ${errors.max_pincode ? 'border-red-300' : ''}`}
                                     placeholder="285999"
                                     required
                                 />
@@ -127,7 +127,7 @@ export default function Shipping({ zones }) {
                                 value={data.charge}
                                 onChange={(e) => setData('charge', e.target.value)}
                                 min={0}
-                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-850 text-sm py-2.5 px-4 transition ${errors.charge ? 'border-red-300' : ''}`}
+                                className={`w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-slate-900 text-sm py-2.5 px-4 transition ${errors.charge ? 'border-red-300' : ''}`}
                                 placeholder="49"
                                 required
                             />
@@ -199,7 +199,7 @@ export default function Shipping({ zones }) {
                                 <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                                     {zones.map((zoneItem) => (
                                         <tr key={zoneItem.id} className={`hover:bg-slate-50/50 ${editId === zoneItem.id ? 'bg-teal-50/10' : ''}`}>
-                                            <td className="py-4 px-5 font-bold text-slate-850">{zoneItem.zone}</td>
+                                            <td className="py-4 px-5 font-bold text-slate-900">{zoneItem.zone}</td>
                                             <td className="py-4 px-5 text-center font-mono text-xs text-slate-500">
                                                 {zoneItem.min_pincode} – {zoneItem.max_pincode}
                                             </td>

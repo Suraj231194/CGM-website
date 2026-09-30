@@ -22,14 +22,14 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import Logo from '@/Components/Logo';
+import { SUPPORT_PHONE, SUPPORT_EMAIL } from '@/lib/brand';
 
 const navLinks = [
     { label: 'Products', href: '/products' },
-    { label: 'Compare', href: '/compare' },
-    { label: 'How It Works', href: '/how-it-works' },
+    { label: 'How it works', href: '/how-it-works' },
     { label: 'Resources', href: '/resources' },
     { label: 'Support', href: '/support' },
-    { label: 'For Providers', href: '/hcp' },
+    { label: 'For professionals', href: '/hcp' },
     { label: 'Blog', href: '/blog' },
 ];
 
@@ -56,7 +56,7 @@ const footerColumns = [
         title: 'Company',
         links: [
             { label: 'Learning center', href: '/blog' },
-            { label: 'Healthcare providers', href: '/hcp' },
+            { label: 'Healthcare professionals', href: '/hcp' },
             { label: 'Request information', href: '/contact' },
         ],
     },
@@ -64,8 +64,11 @@ const footerColumns = [
 
 const formatPrice = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
 
-export default function MainLayout({ children }) {
-    const { url, props } = usePage();
+// Fields that raise the on-screen keyboard; the support bubble steps aside while one has focus.
+const TEXT_FIELD_SELECTOR = 'input:not([type=checkbox]):not([type=radio]):not([type=file]), textarea, select';
+
+export default function MainLayout({ children, hideSupportLauncher = false }) {
+    const { url, props, component } = usePage();
     const { auth, cartCount, flash } = props;
 
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -74,9 +77,13 @@ export default function MainLayout({ children }) {
     const [scrolled, setScrolled] = useState(false);
     const cartCloseRef = useRef(null);
     const mobileCloseRef = useRef(null);
+    const userMenuRef = useRef(null);
 
     // Support Widget States
     const [supportOpen, setSupportOpen] = useState(false);
+    const [fieldFocused, setFieldFocused] = useState(false);
+    const [pulseSupport, setPulseSupport] = useState(false);
+    const supportBubbleRef = useRef(null);
     const supportForm = useForm({
         subject: '',
         description: '',
@@ -101,6 +108,7 @@ export default function MainLayout({ children }) {
             onSuccess: () => {
                 supportForm.reset();
                 setSupportOpen(false);
+                supportBubbleRef.current?.focus();
             }
         });
     };
@@ -110,6 +118,12 @@ export default function MainLayout({ children }) {
     const [cartItems, setCartItems] = useState([]);
     const [cartSubtotal, setCartSubtotal] = useState(0);
     const [loadingCart, setLoadingCart] = useState(false);
+
+    // While a drawer is open, everything behind it is inert, so Tab stays inside the drawer.
+    const overlayOpen = mobileOpen || cartOpen;
+    const returnFocusRef = useRef(null);
+    // React 18 passes unknown attributes through only as strings, so inert needs '' here (React 19 takes a boolean).
+    const backgroundInert = overlayOpen ? '' : undefined;
 
     // Watch for flash message to open toast
     useEffect(() => {
@@ -137,9 +151,12 @@ export default function MainLayout({ children }) {
 
     const handleUpdateQuantity = (itemId, newQty) => {
         if (newQty < 1 || newQty > 10) return;
+        // Show the new count at once; the refetch that follows the new cartCount confirms it.
+        setCartItems((items) => items.map((i) => (i.id === itemId ? { ...i, quantity: newQty } : i)));
         router.patch(`/cart/update/${itemId}`, { quantity: newQty }, {
             preserveScroll: true,
             preserveState: true,
+            onError: () => fetchCartItems(),
         });
     };
 
@@ -156,7 +173,7 @@ export default function MainLayout({ children }) {
         if (params.get('cart') === '1') {
             params.delete('cart');
             const newPath = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            router.replace(newPath, { preserveScroll: true, preserveState: true });
+            router.replace({ url: newPath, preserveScroll: true, preserveState: true });
         }
     };
 
@@ -187,14 +204,16 @@ export default function MainLayout({ children }) {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    // Overlays lock the page behind them, take focus, and close on Escape.
+    // Overlays lock the page behind them, move focus to their close button, and hand focus back on close.
     useEffect(() => {
-        const overlayOpen = mobileOpen || cartOpen;
-        document.documentElement.style.overflow = overlayOpen ? 'hidden' : '';
-        if (cartOpen) cartCloseRef.current?.focus();
-        else if (mobileOpen) mobileCloseRef.current?.focus();
+        if (!overlayOpen) return undefined;
+        returnFocusRef.current = document.activeElement;
+        document.documentElement.style.overflow = 'hidden';
+        const id = requestAnimationFrame(() => (cartOpen ? cartCloseRef : mobileCloseRef).current?.focus());
         return () => {
+            cancelAnimationFrame(id);
             document.documentElement.style.overflow = '';
+            returnFocusRef.current?.focus?.();
         };
     }, [mobileOpen, cartOpen]);
 
@@ -203,12 +222,63 @@ export default function MainLayout({ children }) {
             if (e.key !== 'Escape') return;
             if (cartOpen) handleCloseCart();
             else if (mobileOpen) setMobileOpen(false);
-            else if (supportOpen) setSupportOpen(false);
-            else if (userMenuOpen) setUserMenuOpen(false);
+            else if (supportOpen) {
+                setSupportOpen(false);
+                supportBubbleRef.current?.focus();
+            }
+            else if (userMenuOpen) {
+                // If focus was on a menu item, keep it on the toggle rather than losing it with the menu.
+                if (userMenuRef.current?.contains(document.activeElement)) userMenuRef.current.querySelector('button')?.focus();
+                setUserMenuOpen(false);
+            }
         };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
     });
+
+    // The user menu closes on any press outside it.
+    useEffect(() => {
+        if (!userMenuOpen) return undefined;
+        const onDown = (e) => {
+            if (!userMenuRef.current?.contains(e.target)) setUserMenuOpen(false);
+        };
+        document.addEventListener('pointerdown', onDown);
+        return () => document.removeEventListener('pointerdown', onDown);
+    }, [userMenuOpen]);
+
+    // Opening the support panel moves focus to its first field (or, for guests, its first link).
+    useEffect(() => {
+        if (!supportOpen) return undefined;
+        const id = requestAnimationFrame(() => (document.getElementById('support_subject') || document.querySelector('#support-widget a'))?.focus());
+        return () => cancelAnimationFrame(id);
+    }, [supportOpen]);
+
+    // Track focus in text fields outside the widget, so the bubble never sits over a field being typed in.
+    useEffect(() => {
+        const onFocusIn = (e) => {
+            const target = e.target;
+            setFieldFocused(target instanceof Element && target.matches(TEXT_FIELD_SELECTOR) && !target.closest('#support-widget'));
+        };
+        const onFocusOut = () => setFieldFocused(false);
+        document.addEventListener('focusin', onFocusIn);
+        document.addEventListener('focusout', onFocusOut);
+        return () => {
+            document.removeEventListener('focusin', onFocusIn);
+            document.removeEventListener('focusout', onFocusOut);
+        };
+    }, []);
+
+    // The support bubble pulses once per browser session, then rests.
+    useEffect(() => {
+        try {
+            if (!sessionStorage.getItem('support-pulsed')) {
+                sessionStorage.setItem('support-pulsed', '1');
+                setPulseSupport(true);
+            }
+        } catch {
+            // Storage can be blocked; the bubble simply stays still.
+        }
+    }, []);
 
     const isActive = (href) => url === href || url.startsWith(`${href}/`) || url.startsWith(`${href}?`);
 
@@ -232,47 +302,45 @@ export default function MainLayout({ children }) {
         <div className="flex min-h-screen flex-col">
             <a
                 href="#main"
+                inert={backgroundInert}
                 className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-ink-950 focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white"
             >
                 Skip to main content
             </a>
 
+            {/* Flash announcements: the live regions stay mounted, so text added later is read out. */}
+            <div className="sr-only" role="status" aria-live="polite">{showFlash && flash?.success ? flash.success : ''}</div>
+            <div className="sr-only" role="alert">{showFlash && flash?.error ? flash.error : ''}</div>
+
             {/* Flash Message Toast */}
             {showFlash && (flash?.success || flash?.error) && (
                 <div
-                    role="status"
-                    className={`fixed right-4 top-24 z-[100] flex max-w-sm items-start gap-3 rounded-2xl px-5 py-4 text-sm font-medium shadow-lift animate-fade-in-up ${flash?.success ? 'bg-ink-950 text-white' : 'bg-red-700 text-white'}`}
+                    aria-hidden="true"
+                    className={`fixed left-4 right-4 top-24 z-[100] ml-auto flex max-w-sm items-start gap-3 rounded-2xl px-5 py-4 text-sm font-medium shadow-lift animate-fade-in-up sm:left-auto ${flash?.success ? 'bg-ink-950 text-white' : 'bg-red-700 text-white'}`}
                 >
                     {flash?.success ? <ShieldCheck size={18} className="mt-px shrink-0 text-glow" aria-hidden="true" /> : <Shield size={18} className="mt-px shrink-0" aria-hidden="true" />}
                     <span>{flash?.success || flash?.error}</span>
                 </div>
             )}
 
-            {/* Utility Bar */}
-            <div className="bg-ink-950 text-[13px] text-white/70">
-                <div className="container-page flex h-10 items-center justify-between gap-4">
-                    <div className="flex items-center gap-5">
-                        <a href="tel:1-800-BIOGENIXCGM" className="flex items-center gap-1.5 transition-colors hover:text-white">
-                            <Phone size={13} aria-hidden="true" /> 1-800-BIOGENIXCGM
-                        </a>
-                        <a href="mailto:support@biogenixcgm.com" className="hidden items-center gap-1.5 transition-colors hover:text-white sm:flex">
-                            <Mail size={13} aria-hidden="true" /> support@biogenixcgm.com
-                        </a>
-                    </div>
-                    <div className="flex items-center gap-5">
-                        <Link href="/support#safety" className="flex items-center gap-1.5 transition-colors hover:text-white">
-                            <ShieldCheck size={13} aria-hidden="true" /> <span className="hidden sm:inline">Safety information</span><span className="sm:hidden">Safety</span>
+            {/* Safety line */}
+            <aside aria-label="Safety notice" inert={backgroundInert} className="bg-ink-950 text-[13px] text-white/70">
+                <div className="container-page relative flex h-9 items-center justify-center gap-2">
+                    <ShieldCheck size={13} className="shrink-0 text-glow" aria-hidden="true" />
+                    <span className="hidden min-w-0 truncate sm:inline">Medical devices. Read all warnings before use.</span>
+                    <Link href="/support#safety" className="inline-flex h-9 items-center font-medium text-white transition-colors hover:text-glow">
+                        Safety information &rarr;
+                    </Link>
+                    {auth?.user?.role === 'admin' && (
+                        <Link href="/admin" className="ml-auto inline-flex h-9 items-center font-semibold text-glow transition-colors hover:text-white md:absolute md:right-6 lg:right-8">
+                            Admin Panel
                         </Link>
-                        <Link href="/hcp" className="hidden transition-colors hover:text-white md:inline">Healthcare professionals</Link>
-                        {auth?.user?.role === 'admin' && (
-                            <Link href="/admin" className="font-semibold text-glow transition-colors hover:text-white">Admin Panel</Link>
-                        )}
-                    </div>
+                    )}
                 </div>
-            </div>
+            </aside>
 
             {/* Main Header */}
-            <header className={`glass-header sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-soft' : ''}`}>
+            <header inert={backgroundInert} className={`glass-header sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-soft' : ''}`}>
                 <div className={`container-page flex items-center justify-between gap-6 transition-[height] duration-300 ease-premium ${scrolled ? 'h-16' : 'h-[72px]'}`}>
                     <Logo />
 
@@ -285,7 +353,7 @@ export default function MainLayout({ children }) {
                                     key={link.href}
                                     href={link.href}
                                     aria-current={active ? 'page' : undefined}
-                                    className={`relative rounded-full px-3.5 py-2 text-[0.9rem] font-medium transition-colors duration-200 ${active ? 'text-ink-950' : 'text-ink-500 hover:text-ink-950'}`}
+                                    className={`relative rounded-full px-3.5 py-2 text-[0.9rem] font-medium transition-colors duration-200 ${active ? 'text-ink-950' : 'text-ink-600 hover:text-ink-950'}`}
                                 >
                                     {link.label}
                                     <span className={`absolute inset-x-3.5 -bottom-px h-[2px] rounded-full bg-brand-600 transition-transform duration-300 ease-premium ${active ? 'scale-x-100' : 'scale-x-0'}`} aria-hidden="true" />
@@ -303,14 +371,13 @@ export default function MainLayout({ children }) {
                         {cartButton}
 
                         {/* User Profile dropdown */}
-                        <div className="hidden xl:block">
+                        <div className="hidden lg:block">
                             {auth?.user ? (
-                                <div className="relative">
+                                <div ref={userMenuRef} className="relative">
                                     <button
                                         type="button"
                                         onClick={() => setUserMenuOpen(!userMenuOpen)}
                                         aria-expanded={userMenuOpen}
-                                        aria-haspopup="menu"
                                         className="flex items-center gap-2 rounded-full py-2 pl-2 pr-3 text-sm font-medium text-ink-700 transition hover:bg-ink-900/5"
                                     >
                                         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
@@ -320,17 +387,14 @@ export default function MainLayout({ children }) {
                                         <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     {userMenuOpen && (
-                                        <>
-                                            <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                                            <div role="menu" className="absolute right-0 z-50 mt-2 w-52 animate-fade-in rounded-2xl border border-ink-900/[0.06] bg-white p-1.5 shadow-lift">
-                                                <Link href="/profile" role="menuitem" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-ink-700 hover:bg-sand-100" onClick={() => setUserMenuOpen(false)}>
-                                                    <User size={16} aria-hidden="true" /> My Profile
-                                                </Link>
-                                                <Link href="/logout" method="post" as="button" role="menuitem" className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-red-700 hover:bg-red-50">
-                                                    <LogOut size={16} aria-hidden="true" /> Logout
-                                                </Link>
-                                            </div>
-                                        </>
+                                        <div className="absolute right-0 z-50 mt-2 w-52 animate-fade-in rounded-2xl border border-ink-900/[0.06] bg-white p-1.5 shadow-lift">
+                                            <Link href="/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-ink-700 hover:bg-sand-100" onClick={() => setUserMenuOpen(false)}>
+                                                <User size={16} aria-hidden="true" /> My profile
+                                            </Link>
+                                            <Link href="/logout" method="post" as="button" className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-red-700 hover:bg-red-50">
+                                                <LogOut size={16} aria-hidden="true" /> Log out
+                                            </Link>
+                                        </div>
                                     )}
                                 </div>
                             ) : (
@@ -356,7 +420,7 @@ export default function MainLayout({ children }) {
 
             {/* Mobile Drawer menu */}
             <div
-                className={`fixed inset-0 z-50 xl:hidden ${mobileOpen ? 'visible' : 'invisible'}`}
+                className={`fixed inset-0 z-50 xl:hidden ${mobileOpen ? 'visible' : 'invisible pointer-events-none transition-[visibility] duration-500'}`}
                 aria-hidden={!mobileOpen}
             >
                 <div
@@ -368,7 +432,7 @@ export default function MainLayout({ children }) {
                     role="dialog"
                     aria-modal="true"
                     aria-label="Menu"
-                    className={`absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-canvas shadow-lift transition-transform duration-500 ease-premium ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                    className={`absolute right-0 top-0 flex h-full w-full flex-col bg-canvas shadow-lift transition-transform duration-500 ease-premium sm:max-w-sm ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
                 >
                     <div className="flex h-[72px] items-center justify-between border-b border-ink-900/[0.06] px-5">
                         <Logo />
@@ -402,16 +466,16 @@ export default function MainLayout({ children }) {
                             {auth?.user ? (
                                 <div className="space-y-1">
                                     <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-ink-700 hover:bg-white">
-                                        <User size={18} aria-hidden="true" /> My Profile
+                                        <User size={18} aria-hidden="true" /> My profile
                                     </Link>
                                     <Link href="/logout" method="post" as="button" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-700 hover:bg-red-50">
-                                        <LogOut size={18} aria-hidden="true" /> Logout
+                                        <LogOut size={18} aria-hidden="true" /> Log out
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-2 gap-3">
-                                    <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-secondary">Log in</Link>
-                                    <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-secondary">Sign up</Link>
+                                <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2">
+                                    <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-secondary !px-4">Log in</Link>
+                                    <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-secondary !px-4">Create account</Link>
                                 </div>
                             )}
                         </div>
@@ -420,37 +484,37 @@ export default function MainLayout({ children }) {
                         <Link href="/contact" onClick={() => setMobileOpen(false)} className="btn-primary w-full gap-2">
                             Request information <ArrowRight size={18} aria-hidden="true" />
                         </Link>
-                        <a href="tel:1-800-BIOGENIXCGM" className="mt-3 flex items-center justify-center gap-2 text-sm text-ink-500">
-                            <Phone size={14} aria-hidden="true" /> 1-800-BIOGENIXCGM · 24/7
+                        <a href={SUPPORT_PHONE.href} className="mt-3 flex items-center justify-center gap-2 text-sm text-ink-500">
+                            <Phone size={14} aria-hidden="true" /> {SUPPORT_PHONE.display} · 24/7
                         </a>
                     </div>
                 </div>
             </div>
 
-            <main id="main" className="flex-1">{children}</main>
+            <main id="main" inert={backgroundInert} className="flex-1">{children}</main>
 
             {/* Footer */}
-            <footer className="bg-radiance grain relative overflow-hidden text-white/70">
+            <footer inert={backgroundInert} className="bg-radiance grain relative overflow-hidden text-white/70">
                 <div className="container-page relative pb-10 pt-20">
-                    <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
+                    <div className="grid gap-12 xl:grid-cols-[1fr_2fr]">
                         <div className="max-w-sm">
                             <Logo tone="dark" />
-                            <p className="mt-6 font-display text-2xl leading-snug text-white">
+                            <p className="mt-6 text-balance font-display text-2xl leading-snug text-white">
                                 Advanced diabetes management, designed to disappear into your day.
                             </p>
                             <div className="mt-8 flex flex-col gap-3 text-sm">
-                                <a href="tel:1-800-BIOGENIXCGM" className="flex items-center gap-2.5 transition-colors hover:text-white">
-                                    <Phone size={15} className="text-glow" aria-hidden="true" /> 1-800-BIOGENIXCGM
+                                <a href={SUPPORT_PHONE.href} className="flex items-center gap-2.5 transition-colors hover:text-white">
+                                    <Phone size={15} className="text-glow" aria-hidden="true" /> {SUPPORT_PHONE.display}
                                 </a>
-                                <a href="mailto:support@biogenixcgm.com" className="flex items-center gap-2.5 transition-colors hover:text-white">
-                                    <Mail size={15} className="text-glow" aria-hidden="true" /> support@biogenixcgm.com
+                                <a href={SUPPORT_EMAIL.href} className="flex items-center gap-2.5 transition-colors hover:text-white">
+                                    <Mail size={15} className="text-glow" aria-hidden="true" /> {SUPPORT_EMAIL.display}
                                 </a>
                             </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
                             {footerColumns.map((column) => (
                                 <div key={column.title}>
-                                    <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">{column.title}</h3>
+                                    <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">{column.title}</h2>
                                     <ul className="mt-5 space-y-3">
                                         {column.links.map((link) => (
                                             <li key={link.label}>
@@ -461,7 +525,7 @@ export default function MainLayout({ children }) {
                                 </div>
                             ))}
                             <div>
-                                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Legal</h3>
+                                <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Legal</h2>
                                 <ul className="mt-5 space-y-3">
                                     <li><a href="#" className="text-sm transition-colors hover:text-glow">Privacy Policy</a></li>
                                     <li><a href="#" className="text-sm transition-colors hover:text-glow">Terms of Service</a></li>
@@ -477,11 +541,16 @@ export default function MainLayout({ children }) {
                             <span>Medical devices. Read all warnings before use. Consult your healthcare provider.</span>
                         </p>
                     </div>
+
+                    {/* Signature: a quiet oversized wordmark that closes the page. */}
+                    <p aria-hidden="true" className="mt-14 select-none whitespace-nowrap font-display text-[clamp(3rem,13vw,11rem)] leading-[0.8] tracking-[-0.04em] text-white/[0.06]">
+                        biogenixCGM
+                    </p>
                 </div>
             </footer>
 
             {/* Sliding Cart Drawer */}
-            <div className={`fixed inset-0 z-50 ${cartOpen ? 'visible' : 'invisible'}`} aria-hidden={!cartOpen}>
+            <div className={`fixed inset-0 z-50 ${cartOpen ? 'visible' : 'invisible pointer-events-none transition-[visibility] duration-500'}`} aria-hidden={!cartOpen}>
                 {/* Backdrop overlay */}
                 <div className={`absolute inset-0 bg-ink-950/50 backdrop-blur-sm transition-opacity duration-300 ${cartOpen ? 'opacity-100' : 'opacity-0'}`} onClick={handleCloseCart} />
 
@@ -496,15 +565,19 @@ export default function MainLayout({ children }) {
                     <div className="flex h-[72px] items-center justify-between border-b border-ink-900/[0.06] px-6">
                         <h2 id="cart-title" className="flex items-center gap-2.5 font-display text-2xl text-ink-950">
                             Your cart
-                            {cartCount > 0 && <span className="chip-brand font-sans">{cartCount}</span>}
+                            {cartCount > 0 && (
+                                <span className="chip-brand font-sans">
+                                    <span className="sr-only">, </span>{cartCount}<span className="sr-only">{cartCount === 1 ? ' item' : ' items'}</span>
+                                </span>
+                            )}
                         </h2>
                         <button ref={cartCloseRef} type="button" onClick={handleCloseCart} className="flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition hover:bg-ink-900/5" aria-label="Close cart">
                             <X size={20} aria-hidden="true" />
                         </button>
                     </div>
 
-                    {/* Loader */}
-                    {loadingCart ? (
+                    {/* Loader (first load only; refreshes keep the list in place) */}
+                    {loadingCart && cartItems.length === 0 ? (
                         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-ink-400">
                             <Loader2 className="animate-spin text-brand-600" size={30} aria-hidden="true" />
                             <span className="text-sm font-medium">Loading your cart…</span>
@@ -524,17 +597,17 @@ export default function MainLayout({ children }) {
                     ) : (
                         /* Items List */
                         <div className="flex flex-1 flex-col overflow-hidden">
-                            <ul className="flex-1 space-y-3 overflow-y-auto p-6">
+                            <ul aria-busy={loadingCart} className={`flex-1 space-y-3 overflow-y-auto p-6 transition-opacity ${loadingCart ? 'opacity-60' : ''}`}>
                                 {cartItems.map((item) => (
                                     <li key={item.id} className="flex gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-3">
                                         {/* Product Image */}
                                         <div className="product-stage h-20 w-20 shrink-0 rounded-2xl">
-                                            <img src={item.product.image_url} alt="" className="h-16 w-16 object-contain" />
+                                            <img src={item.product.image_url} alt="" className={`h-full w-full object-contain ${item.product.slug === 'horizon-smart-pen' ? '' : 'scale-[1.3]'}`} />
                                         </div>
 
                                         {/* Item Info */}
                                         <div className="min-w-0 flex-1 py-1">
-                                            <h4 className="truncate text-sm font-semibold text-ink-900">{item.product.name}</h4>
+                                            <h3 className="truncate text-sm font-semibold text-ink-900">{item.product.name}</h3>
                                             <p className="mt-0.5 text-sm text-ink-500">{formatPrice(item.price)}</p>
 
                                             {/* Stepper & Trash */}
@@ -543,7 +616,7 @@ export default function MainLayout({ children }) {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
+                                                        className="flex h-10 w-10 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
                                                         disabled={item.quantity <= 1}
                                                         aria-label={`Decrease quantity of ${item.product.name}`}
                                                     >
@@ -553,7 +626,7 @@ export default function MainLayout({ children }) {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
+                                                        className="flex h-10 w-10 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
                                                         disabled={item.quantity >= 10}
                                                         aria-label={`Increase quantity of ${item.product.name}`}
                                                     >
@@ -564,7 +637,7 @@ export default function MainLayout({ children }) {
                                                 <button
                                                     type="button"
                                                     onClick={() => handleRemoveItem(item.id)}
-                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 transition hover:bg-red-50 hover:text-red-700"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full text-ink-400 transition hover:bg-red-50 hover:text-red-700"
                                                     title="Remove item"
                                                     aria-label={`Remove ${item.product.name}`}
                                                 >
@@ -601,148 +674,168 @@ export default function MainLayout({ children }) {
                 </div>
             </div>
 
-            {/* Floating Support Button & Widget */}
-            <div className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end sm:bottom-6 sm:right-6">
-                {/* Support Widget Card */}
+            {/* Floating Support Button & Widget (not on the short redirect interstitial) */}
+            {component !== 'RedirectNotice' && (
                 <div
-                    id="support-widget"
-                    role="dialog"
-                    aria-label="Support"
-                    aria-hidden={!supportOpen}
-                    className={`mb-4 w-[calc(100vw-2.5rem)] max-w-[380px] origin-bottom-right overflow-hidden rounded-4xl border border-ink-900/[0.06] bg-white shadow-lift transition-all duration-500 ease-premium ${
-                        supportOpen
-                            ? 'pointer-events-auto visible translate-y-0 scale-100 opacity-100'
-                            : 'invisible translate-y-4 scale-95 opacity-0'
-                    }`}
+                    inert={backgroundInert}
+                    className="pointer-events-none fixed bottom-[calc(1.25rem+var(--dock-offset,0px))] right-5 z-40 flex flex-col-reverse items-end transition-[bottom] duration-500 ease-premium sm:bottom-[calc(1.5rem+var(--dock-offset,0px))] sm:right-6 md:bottom-6"
                 >
-                    {/* Header */}
-                    <div className="bg-radiance grain relative flex items-start justify-between p-6 text-white">
-                        <div>
-                            <h3 className="flex items-center gap-2 font-display text-xl">
-                                <MessageSquare size={18} className="text-glow" aria-hidden="true" /> biogenix Support
-                            </h3>
-                            <p className="mt-1 text-xs text-white/65">Need help? Open a support ticket below.</p>
+                    {/* Bubble Toggle Button: first in the DOM so Tab moves from it into the open panel; flex-col-reverse keeps it below. */}
+                    <button
+                        ref={supportBubbleRef}
+                        type="button"
+                        onClick={() => {
+                            setSupportOpen(!supportOpen);
+                            // The first pulse is the only one; reopening and closing never replays it.
+                            setPulseSupport(false);
+                        }}
+                        className={`pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-full bg-ink-950 text-white shadow-lift transition duration-300 ease-premium hover:scale-105 hover:bg-brand-800 active:scale-95 ${!supportOpen && hideSupportLauncher ? 'md:pointer-events-none md:translate-y-2 md:opacity-0 md:focus-visible:pointer-events-auto md:focus-visible:translate-y-0 md:focus-visible:opacity-100' : ''} ${!supportOpen && fieldFocused ? 'max-lg:pointer-events-none max-lg:translate-y-4 max-lg:opacity-0' : ''}`}
+                        aria-label={supportOpen ? 'Close support' : 'Open support'}
+                        aria-expanded={supportOpen}
+                        aria-controls="support-widget"
+                        title="Support"
+                    >
+                        {!supportOpen && pulseSupport && <span className="pointer-events-none absolute inset-0 rounded-full bg-brand-500/40 opacity-0 animate-pulse-ring" aria-hidden="true" />}
+                        {supportOpen ? <X size={22} className="relative" aria-hidden="true" /> : <MessageSquare size={22} className="relative" aria-hidden="true" />}
+                    </button>
+
+                    {/* Support Widget Card */}
+                    <div
+                        id="support-widget"
+                        role="dialog"
+                        aria-label="Support"
+                        aria-hidden={!supportOpen}
+                        className={`mb-4 max-h-[calc(100dvh-7rem-var(--dock-offset,0px))] w-[calc(100vw-2.5rem)] max-w-[380px] origin-bottom-right overflow-y-auto overscroll-contain rounded-4xl border border-ink-900/[0.06] bg-white shadow-lift duration-500 ease-premium md:max-h-[calc(100dvh-7rem)] ${
+                            supportOpen
+                                ? 'pointer-events-auto visible translate-y-0 scale-100 opacity-100 transition-[opacity,transform]'
+                                : 'invisible translate-y-4 scale-95 opacity-0 transition-[opacity,transform,visibility]'
+                        }`}
+                    >
+                        {/* Header */}
+                        <div className="bg-radiance grain relative flex items-start justify-between p-6 text-white">
+                            <div>
+                                <h3 className="flex items-center gap-2 font-display text-xl">
+                                    <MessageSquare size={18} className="text-glow" aria-hidden="true" /> biogenixCGM Support
+                                </h3>
+                                <p className="mt-1 text-xs text-white/65">
+                                    {auth?.user ? 'Need help? Open a support ticket below.' : 'Message us, or log in to track a support ticket.'}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSupportOpen(false);
+                                    supportBubbleRef.current?.focus();
+                                }}
+                                className="-mr-2 -mt-2 flex h-10 w-10 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white"
+                                aria-label="Close support"
+                            >
+                                <X size={16} aria-hidden="true" />
+                            </button>
                         </div>
-                        <button type="button" onClick={() => setSupportOpen(false)} className="rounded-full p-1.5 text-white/70 transition hover:bg-white/10 hover:text-white" aria-label="Close support">
-                            <X size={16} aria-hidden="true" />
-                        </button>
-                    </div>
 
-                    {/* Content */}
-                    {auth?.user ? (
-                        /* Logged In: Ticket Form */
-                        <form onSubmit={handleSupportSubmit} className="space-y-4 p-6">
-                            <div>
-                                <label htmlFor="support_subject" className="field-label">Subject</label>
-                                <input
-                                    type="text"
-                                    id="support_subject"
-                                    value={supportForm.data.subject}
-                                    onChange={(e) => supportForm.setData('subject', e.target.value)}
-                                    placeholder="e.g. Order delivery, device setup, billing"
-                                    className="field !py-2.5 text-sm"
-                                    required
-                                />
-                                {supportForm.errors.subject && (
-                                    <p className="field-error">{supportForm.errors.subject}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label htmlFor="support_description" className="field-label">Message</label>
-                                <textarea
-                                    id="support_description"
-                                    rows="4"
-                                    value={supportForm.data.description}
-                                    onChange={(e) => supportForm.setData('description', e.target.value)}
-                                    placeholder="Describe your issue or question in detail..."
-                                    className="field resize-none !py-2.5 text-sm"
-                                    required
-                                />
-                                {supportForm.errors.description && (
-                                    <p className="field-error">{supportForm.errors.description}</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <span className="field-label">Attachment <span className="font-normal text-ink-400">(optional, max 4MB)</span></span>
-                                <div className="flex items-center gap-3">
-                                    <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-ink-900/10 bg-sand-50 px-4 py-2 text-xs font-semibold text-ink-700 transition hover:bg-sand-100">
-                                        <Paperclip size={14} aria-hidden="true" /> {supportForm.data.image ? 'Change image' : 'Choose image'}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handleSupportFileChange}
-                                            className="sr-only"
-                                        />
-                                    </label>
-                                    {supportForm.data.image && (
-                                        <div className="flex min-w-0 max-w-[200px] items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs text-brand-700">
-                                            <span className="truncate">{supportForm.data.image.name}</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => supportForm.setData('image', null)}
-                                                className="shrink-0 text-ink-400 hover:text-red-700"
-                                                title="Remove file"
-                                                aria-label="Remove attachment"
-                                            >
-                                                <X size={12} aria-hidden="true" />
-                                            </button>
-                                        </div>
+                        {/* Content */}
+                        {auth?.user ? (
+                            /* Logged In: Ticket Form */
+                            <form onSubmit={handleSupportSubmit} className="space-y-4 p-6">
+                                <div>
+                                    <label htmlFor="support_subject" className="field-label">Subject</label>
+                                    <input
+                                        type="text"
+                                        id="support_subject"
+                                        value={supportForm.data.subject}
+                                        onChange={(e) => supportForm.setData('subject', e.target.value)}
+                                        placeholder="e.g. Order delivery, device setup, billing"
+                                        className="field !py-2.5 sm:text-sm"
+                                        required
+                                    />
+                                    {supportForm.errors.subject && (
+                                        <p className="field-error">{supportForm.errors.subject}</p>
                                     )}
                                 </div>
-                                {supportForm.errors.image && (
-                                    <p className="field-error">{supportForm.errors.image}</p>
-                                )}
-                            </div>
 
-                            <button
-                                type="submit"
-                                disabled={supportForm.processing}
-                                className="btn-primary w-full gap-2 text-sm"
-                            >
-                                {supportForm.processing ? 'Submitting ticket…' : 'Submit support ticket'} <Send size={14} aria-hidden="true" />
-                            </button>
-                        </form>
-                    ) : (
-                        /* Guest Prompt */
-                        <div className="space-y-5 p-7 text-center">
-                            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                                <Shield size={24} aria-hidden="true" />
-                            </span>
-                            <div className="space-y-1.5">
-                                <h4 className="font-display text-xl text-ink-950">Sign in for secure support</h4>
-                                <p className="text-sm leading-relaxed text-ink-500">Please sign in to raise a support ticket. This enables us to maintain a secure communication log and track your inquiries over time.</p>
+                                <div>
+                                    <label htmlFor="support_description" className="field-label">Message</label>
+                                    <textarea
+                                        id="support_description"
+                                        rows="4"
+                                        value={supportForm.data.description}
+                                        onChange={(e) => supportForm.setData('description', e.target.value)}
+                                        placeholder="Describe your issue or question in detail..."
+                                        className="field resize-none !py-2.5 sm:text-sm"
+                                        required
+                                    />
+                                    {supportForm.errors.description && (
+                                        <p className="field-error">{supportForm.errors.description}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <span className="field-label">Attachment <span className="font-normal text-ink-400">(optional, max 4MB)</span></span>
+                                    <div className="flex items-center gap-3">
+                                        <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-ink-900/10 bg-sand-50 px-4 py-2 text-xs font-semibold text-ink-700 transition focus-within:ring-2 focus-within:ring-brand-500 focus-within:ring-offset-2 hover:bg-sand-100">
+                                            <Paperclip size={14} aria-hidden="true" /> {supportForm.data.image ? 'Change image' : 'Choose image'}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleSupportFileChange}
+                                                className="sr-only"
+                                            />
+                                        </label>
+                                        {supportForm.data.image && (
+                                            <div className="flex min-w-0 max-w-[200px] items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs text-brand-700">
+                                                <span className="truncate">{supportForm.data.image.name}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => supportForm.setData('image', null)}
+                                                    className="-my-1.5 -mr-2 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-ink-400 hover:text-red-700"
+                                                    title="Remove file"
+                                                    aria-label="Remove attachment"
+                                                >
+                                                    <X size={12} aria-hidden="true" />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {supportForm.errors.image && (
+                                        <p className="field-error">{supportForm.errors.image}</p>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={supportForm.processing}
+                                    className="btn-primary w-full gap-2 text-sm"
+                                >
+                                    {supportForm.processing ? 'Submitting ticket…' : 'Submit support ticket'} <Send size={14} aria-hidden="true" />
+                                </button>
+                            </form>
+                        ) : (
+                            /* Guest Prompt */
+                            <div className="space-y-5 p-7 text-center">
+                                <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                                    <Shield size={24} aria-hidden="true" />
+                                </span>
+                                <div className="space-y-1.5">
+                                    <h3 className="font-display text-xl text-ink-950">How can we help?</h3>
+                                    <p className="text-sm leading-relaxed text-ink-500">Send us a message and our team will get back to you. To open a support ticket you can track over time, log in first.</p>
+                                </div>
+                                <div className="flex flex-col gap-2 pt-1">
+                                    <Link href="/contact" onClick={() => setSupportOpen(false)} className="btn-primary text-sm">
+                                        Send us a message
+                                    </Link>
+                                    <Link href="/login" onClick={() => setSupportOpen(false)} className="py-2 text-sm font-semibold text-brand-700 hover:text-brand-900">
+                                        Log in to open a ticket
+                                    </Link>
+                                    <a href={SUPPORT_PHONE.href} className="flex items-center justify-center gap-1.5 text-xs text-ink-500">
+                                        <Phone size={12} aria-hidden="true" /> Or call {SUPPORT_PHONE.display}, 24/7
+                                    </a>
+                                </div>
                             </div>
-                            <div className="flex flex-col gap-2 pt-1">
-                                <Link href="/login" onClick={() => setSupportOpen(false)} className="btn-primary text-sm">
-                                    Log in
-                                </Link>
-                                <Link href="/register" onClick={() => setSupportOpen(false)} className="py-2 text-sm font-semibold text-brand-700 hover:text-brand-900">
-                                    Create a new account
-                                </Link>
-                                <a href="tel:1-800-BIOGENIXCGM" className="flex items-center justify-center gap-1.5 text-xs text-ink-400">
-                                    <Phone size={12} aria-hidden="true" /> Or call 1-800-BIOGENIXCGM, 24/7
-                                </a>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-
-                {/* Bubble Toggle Button */}
-                <button
-                    type="button"
-                    onClick={() => setSupportOpen(!supportOpen)}
-                    className="pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-full bg-ink-950 text-white shadow-lift transition duration-300 ease-premium hover:scale-105 hover:bg-brand-800 active:scale-95"
-                    aria-label={supportOpen ? 'Close support' : 'Open support'}
-                    aria-expanded={supportOpen}
-                    aria-controls="support-widget"
-                    title="Support"
-                >
-                    {!supportOpen && <span className="absolute inset-0 rounded-full bg-brand-500/40 animate-pulse-ring [animation-iteration-count:2]" aria-hidden="true" />}
-                    {supportOpen ? <X size={22} aria-hidden="true" /> : <MessageSquare size={22} aria-hidden="true" />}
-                </button>
-            </div>
+            )}
         </div>
     );
 }
