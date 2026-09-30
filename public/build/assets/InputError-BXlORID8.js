@@ -1,1 +1,0 @@
-import{j as s}from"./app-Bif8JXZ1.js";import{C as t}from"./circle-alert-DOXYz-bY.js";function a({message:r,className:e="",...i}){return r?s.jsxs("p",{...i,className:"field-error "+e,children:[s.jsx(t,{size:13,className:"shrink-0","aria-hidden":"true"}),r]}):null}export{a as I};

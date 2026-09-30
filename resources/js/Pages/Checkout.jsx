@@ -140,9 +140,9 @@ export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings
                         <h1 className="mt-3 section-heading">Checkout</h1>
                     </div>
 
-                    <div className="grid items-start gap-8 lg:grid-cols-12">
+                    <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
                         {/* Left Column: Form Details */}
-                        <form onSubmit={handleCheckoutSubmit} className="space-y-6 lg:col-span-7">
+                        <form onSubmit={handleCheckoutSubmit} className="min-w-0 space-y-6 lg:col-span-7">
                             {/* Shipping Address */}
                             <div className="card space-y-6 p-6 sm:p-8">
                                 <h2 className="flex items-center gap-3 border-b border-ink-900/[0.06] pb-4 font-display text-xl font-normal text-ink-950">
@@ -378,7 +378,7 @@ export default function Checkout({ cartItems = [], subtotal = 0, paymentSettings
                         </form>
 
                         {/* Right Column: Order Summary */}
-                        <div className="space-y-6 lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:col-span-5">
+                        <div className="min-w-0 space-y-6 lg:sticky lg:top-[calc(var(--header-height)+1.5rem)] lg:col-span-5">
                             <div className="card space-y-6 p-6 sm:p-8">
                                 <h2 className="flex items-center gap-3 border-b border-ink-900/[0.06] pb-4 font-display text-xl font-normal text-ink-950">
                                     <span className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-700">

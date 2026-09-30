@@ -211,7 +211,10 @@ export default function ContactForm({ products = [], sourcePage = '', defaultRol
                         className="mt-0.5 h-5 w-5 shrink-0 rounded-md border-ink-900/50 text-brand-700 focus:ring-brand-500"
                     />
                     <label htmlFor="consent" className="text-sm leading-relaxed text-ink-600">
-                        I consent to biogenixCGM contacting me regarding my inquiry. I have read and agree to the Privacy Policy. <span className="text-brand-600" aria-hidden="true">*</span>
+                        I consent to biogenixCGM contacting me regarding my inquiry. I have read and agree to the{' '}
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="font-medium text-brand-700 underline decoration-brand-300 underline-offset-4 hover:decoration-brand-700">
+                            Privacy Policy<span className="sr-only"> (opens in a new tab)</span>
+                        </a>. <span className="text-brand-600" aria-hidden="true">*</span>
                     </label>
                 </div>
                 <FieldError id="consent-error" message={errors.consent} />

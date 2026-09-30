@@ -177,17 +177,17 @@ export default function MainLayout({ children, hideSupportLauncher = false }) {
         }
     };
 
-    // Listen for direct URL query params or flash redirect opens
+    // Open or close the cart when the URL changes (?cart=1, or a redirect carrying open_cart).
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
+        setCartOpen(params.get('cart') === '1' || Boolean(flash?.open_cart));
+    }, [url]);
 
-        // Cart check
-        if (params.get('cart') === '1' || flash?.open_cart) {
-            setCartOpen(true);
-        } else {
-            setCartOpen(false);
-        }
-    }, [url, flash?.open_cart]);
+    // A flash can only open the drawer. Quantity changes re-render without open_cart, and
+    // that must not close a drawer the shopper is using.
+    useEffect(() => {
+        if (flash?.open_cart) setCartOpen(true);
+    }, [flash?.open_cart]);
 
     // Fetch items when cart is open or count changes
     useEffect(() => {
@@ -326,6 +326,9 @@ export default function MainLayout({ children, hideSupportLauncher = false }) {
             {/* Safety line */}
             <aside aria-label="Safety notice" inert={backgroundInert} className="bg-ink-950 text-[13px] text-white/70">
                 <div className="container-page relative flex h-9 items-center justify-center gap-2">
+                    <a href={SUPPORT_PHONE.href} className="absolute left-8 hidden h-9 items-center gap-1.5 transition-colors hover:text-white lg:inline-flex">
+                        <Phone size={13} aria-hidden="true" /> {SUPPORT_PHONE.display}
+                    </a>
                     <ShieldCheck size={13} className="shrink-0 text-glow" aria-hidden="true" />
                     <span className="hidden min-w-0 truncate sm:inline">Medical devices. Read all warnings before use.</span>
                     <Link href="/support#safety" className="inline-flex h-9 items-center font-medium text-white transition-colors hover:text-glow">
@@ -527,8 +530,8 @@ export default function MainLayout({ children, hideSupportLauncher = false }) {
                             <div>
                                 <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Legal</h2>
                                 <ul className="mt-5 space-y-3">
-                                    <li><a href="#" className="text-sm transition-colors hover:text-glow">Privacy Policy</a></li>
-                                    <li><a href="#" className="text-sm transition-colors hover:text-glow">Terms of Service</a></li>
+                                    <li><Link href="/privacy" className="text-sm transition-colors hover:text-glow">Privacy Policy</Link></li>
+                                    <li><Link href="/terms" className="text-sm transition-colors hover:text-glow">Terms of Service</Link></li>
                                 </ul>
                             </div>
                         </div>
@@ -689,7 +692,7 @@ export default function MainLayout({ children, hideSupportLauncher = false }) {
                             // The first pulse is the only one; reopening and closing never replays it.
                             setPulseSupport(false);
                         }}
-                        className={`pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-full bg-ink-950 text-white shadow-lift transition duration-300 ease-premium hover:scale-105 hover:bg-brand-800 active:scale-95 ${!supportOpen && hideSupportLauncher ? 'md:pointer-events-none md:translate-y-2 md:opacity-0 md:focus-visible:pointer-events-auto md:focus-visible:translate-y-0 md:focus-visible:opacity-100' : ''} ${!supportOpen && fieldFocused ? 'max-lg:pointer-events-none max-lg:translate-y-4 max-lg:opacity-0' : ''}`}
+                        className={`pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-full bg-ink-950 text-white shadow-lift transition duration-300 ease-premium hover:scale-105 hover:bg-brand-800 active:scale-95 ${!supportOpen && hideSupportLauncher ? 'pointer-events-none translate-y-2 opacity-0 focus-visible:pointer-events-auto focus-visible:translate-y-0 focus-visible:opacity-100' : ''} ${!supportOpen && fieldFocused ? 'max-lg:pointer-events-none max-lg:translate-y-4 max-lg:opacity-0' : ''}`}
                         aria-label={supportOpen ? 'Close support' : 'Open support'}
                         aria-expanded={supportOpen}
                         aria-controls="support-widget"

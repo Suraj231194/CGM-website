@@ -75,7 +75,7 @@ export default function Home({ products = [], faqs = [], blogPosts = [] }) {
                 <div className="container-page relative grid items-center gap-14 pb-20 pt-12 md:pt-20 lg:grid-cols-[1.05fr_0.95fr] lg:pb-28">
                     <div className="max-w-2xl">
                         <p className="eyebrow animate-fade-in-up">Next-generation diabetes technology</p>
-                        <h1 className="mt-7 animate-fade-in-up animate-delay-100 text-balance font-display text-[2.75rem] font-normal leading-[1.02] tracking-[-0.03em] text-ink-950 sm:text-display-lg lg:text-display-md xl:text-display-xl min-[1400px]:text-display-2xl">
+                        <h1 className="mt-7 animate-fade-in-up animate-delay-100 text-balance font-display text-[2.75rem] font-normal leading-[1.02] tracking-[-0.03em] text-ink-950 sm:text-display-lg lg:text-display-md xl:text-display-xl">
                             Advanced diabetes management, <em className="font-light italic text-brand-700">beautifully</em> simplified.
                         </h1>
                         <p className="mt-7 max-w-xl animate-fade-in-up animate-delay-200 text-pretty text-lg leading-relaxed text-ink-500 md:text-xl">

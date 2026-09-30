@@ -35,13 +35,16 @@ export default function Legal({ doc = 'privacy' }) {
             <PageHero title={page.title} subtitle={page.subtitle} breadcrumbs={[{ label: page.title }]} />
 
             <section className="container-page section-pad">
-                <div className="max-w-2xl rounded-4xl border border-ink-900/[0.07] bg-white p-8 shadow-soft md:p-12">
+                <div className="max-w-2xl rounded-4xl border border-ink-900/[0.07] bg-white p-6 shadow-soft sm:p-8 md:p-12">
                     <h2 className="font-display text-display-xs font-normal text-ink-950">While this page is being prepared</h2>
                     <p className="mt-4 max-w-[36rem] text-[1.0625rem] leading-relaxed text-ink-600">{page.body}</p>
+                    <p className="mt-3 text-sm text-ink-500">
+                        Email <a href={SUPPORT_EMAIL.href} className="font-medium text-brand-700 [overflow-wrap:anywhere] hover:text-brand-900">{SUPPORT_EMAIL.display}</a>
+                    </p>
 
                     <div className="mt-8 flex flex-wrap items-center gap-3">
                         <a href={`${SUPPORT_EMAIL.href}?subject=${encodeURIComponent(page.subject)}`} className="btn-primary gap-2">
-                            <Mail size={16} aria-hidden="true" /> Email {SUPPORT_EMAIL.display}
+                            <Mail size={16} aria-hidden="true" /> Email our team
                         </a>
                         <Link href="/contact" className="btn-secondary">Contact form</Link>
                     </div>
