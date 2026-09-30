@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="t">
+  <title id="t">A care team connected to a patient through chat, phone and shared reports</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173c3d"/>
+      <stop offset="1" stop-color="#071619"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7de3d3" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7de3d3" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="480" fill="url(#bg)"/>
+  <circle cx="320" cy="240" r="220" fill="url(#glow)"/>
+
+  <!-- Orbit connecting the care team -->
+  <g fill="none" stroke="#7de3d3">
+    <circle cx="320" cy="240" r="150" stroke-opacity="0.25" stroke-width="1.5" stroke-dasharray="3 7"/>
+    <circle cx="320" cy="240" r="96" stroke-opacity="0.18" stroke-width="1.5"/>
+  </g>
+
+  <!-- Centre: patient with heart pulse -->
+  <g filter="url(#shadow)">
+    <circle cx="320" cy="240" r="62" fill="#ffffff"/>
+  </g>
+  <circle cx="320" cy="222" r="18" fill="#1d5859"/>
+  <path d="M290 268 a30 24 0 0 1 60 0 v4 h-60 z" fill="#1d5859"/>
+
+  <!-- Care team nodes on the orbit -->
+  <g filter="url(#shadow)">
+    <circle cx="320" cy="90" r="34" fill="#2f8683"/>
+    <circle cx="460" cy="300" r="34" fill="#7fbfbb"/>
+    <circle cx="180" cy="300" r="34" fill="#afd9d6"/>
+  </g>
+  <!-- Headset (support) -->
+  <path d="M304 96 v-8 a16 16 0 0 1 32 0 v8" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>
+  <rect x="299" y="92" width="9" height="14" rx="4" fill="#ffffff"/>
+  <rect x="332" y="92" width="9" height="14" rx="4" fill="#ffffff"/>
+  <path d="M336 106 q0 8 -10 8" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Stethoscope (clinician) -->
+  <path d="M448 286 v10 a12 12 0 0 0 24 0 v-10" fill="none" stroke="#071619" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M460 308 v6 a10 10 0 0 0 16 4" fill="none" stroke="#071619" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="478" cy="316" r="5" fill="none" stroke="#071619" stroke-width="3"/>
+  <!-- Family / follower -->
+  <circle cx="172" cy="292" r="8" fill="#1d5859"/>
+  <circle cx="190" cy="296" r="6" fill="#1d5859"/>
+  <path d="M158 316 a14 12 0 0 1 28 0 z M180 316 a10 9 0 0 1 20 0 z" fill="#1d5859"/>
+
+  <!-- Chat bubbles -->
+  <g filter="url(#shadow)">
+    <path d="M430 108 h138 a18 18 0 0 1 18 18 v38 a18 18 0 0 1 -18 18 h-112 l-18 16 v-16 h-8 a18 18 0 0 1 -18 -18 v-38 a18 18 0 0 1 18 -18 z" fill="#ffffff"/>
+    <path d="M60 150 h136 a18 18 0 0 1 18 18 v34 a18 18 0 0 1 -18 18 h-8 v16 l-18 -16 h-110 a18 18 0 0 1 -18 -18 v-34 a18 18 0 0 1 18 -18 z" fill="#2f8683"/>
+  </g>
+  <rect x="432" y="126" width="120" height="9" rx="4.5" fill="#122326"/>
+  <rect x="432" y="144" width="92" height="8" rx="4" fill="#c7d2d4"/>
+  <rect x="432" y="160" width="108" height="8" rx="4" fill="#e3e9ea"/>
+  <circle cx="84" cy="185" r="5" fill="#ffffff"/>
+  <circle cx="102" cy="185" r="5" fill="#ffffff" opacity="0.75"/>
+  <circle cx="120" cy="185" r="5" fill="#ffffff" opacity="0.5"/>
+
+  <!-- Shared report -->
+  <g transform="translate(392 380)" filter="url(#shadow)">
+    <rect width="190" height="64" rx="18" fill="#ffffff"/>
+    <rect x="18" y="16" width="32" height="32" rx="9" fill="#eef7f6"/>
+    <path d="M26 38 l6 -8 l6 5 l6 -10" fill="none" stroke="#1d5859" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="62" y="20" width="96" height="8" rx="4" fill="#122326"/>
+    <rect x="62" y="36" width="70" height="7" rx="3.5" fill="#c7d2d4"/>
+  </g>
+  <g transform="translate(58 380)" filter="url(#shadow)">
+    <rect width="170" height="64" rx="18" fill="#ffffff"/>
+    <circle cx="36" cy="32" r="16" fill="#1d5859"/>
+    <path d="M30 26 c0 8 4 12 12 12 l2 -3 l-4 -3 l-2 2 c-2 -1 -4 -3 -5 -5 l2 -2 l-3 -4 z" fill="#ffffff"/>
+    <rect x="62" y="22" width="84" height="8" rx="4" fill="#122326"/>
+    <rect x="62" y="38" width="60" height="7" rx="3.5" fill="#c7d2d4"/>
+  </g>
+</svg>

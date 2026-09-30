@@ -1,72 +1,98 @@
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import PageHero from '@/Components/PageHero';
+import Reveal from '@/Components/Reveal';
+import BlogCover from '@/Components/BlogCover';
 import { useState } from 'react';
-import { Calendar, User, Tag, ArrowRight } from 'lucide-react';
+import { ArrowRight, Calendar, ShieldCheck } from 'lucide-react';
 
-const categoryColors = {
-    Education: 'bg-blue-50 text-blue-700',
-    Lifestyle: 'bg-emerald-50 text-emerald-700',
-    Technology: 'bg-purple-50 text-purple-700',
-};
+const formatDate = (value, month = 'short') =>
+    new Date(value).toLocaleDateString('en-US', { month, day: 'numeric', year: 'numeric' });
 
-export default function Index({ posts }) {
+export default function Index({ posts = [] }) {
     const [filter, setFilter] = useState('all');
     const categories = ['all', ...new Set(posts.map((p) => p.category))];
     const filtered = filter === 'all' ? posts : posts.filter((p) => p.category === filter);
+    const [featured, ...rest] = filtered;
 
     return (
         <MainLayout>
-            <Head title="Learning Center — biogenixCGM" />
+            <Head title="Learning Center" />
 
-            <section className="bg-gradient-to-br from-slate-50 to-teal-50 py-16">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4 animate-fade-in-up">Learning Center</h1>
-                    <p className="text-lg text-slate-500 max-w-2xl mx-auto animate-fade-in-up animate-delay-100">
-                        Expert-written, medically-reviewed articles to help you understand diabetes management technology and live your best life.
-                    </p>
-                </div>
-            </section>
+            <PageHero
+                eyebrow="Learning center"
+                title="Learning Center"
+                subtitle="Expert-written, medically-reviewed articles to help you understand diabetes management technology and live your best life."
+                breadcrumbs={[{ label: 'Learning Center' }]}
+            />
 
-            <section className="max-w-7xl mx-auto px-4 py-16">
+            <section className="container-page section-pad">
                 {/* Category Tabs */}
-                <div className="flex flex-wrap gap-2 mb-10 justify-center">
+                <div className="mb-12 flex flex-wrap gap-2" role="group" aria-label="Filter articles by category">
                     {categories.map((cat) => (
                         <button
                             key={cat}
+                            type="button"
                             onClick={() => setFilter(cat)}
-                            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${filter === cat ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-slate-600 hover:bg-teal-50 border border-slate-200'}`}
+                            aria-pressed={filter === cat}
+                            className={`rounded-full px-5 py-2.5 text-sm font-medium transition duration-300 ${filter === cat ? 'bg-ink-950 text-white shadow-soft' : 'border border-ink-900/10 bg-white text-ink-600 hover:border-brand-600 hover:text-brand-700'}`}
                         >
                             {cat === 'all' ? 'All Articles' : cat}
                         </button>
                     ))}
                 </div>
 
-                {/* Blog Grid */}
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {filtered.map((post) => (
-                        <Link key={post.id} href={`/blog/${post.slug}`} className="card group block">
-                            <div className="h-44 bg-gradient-to-br from-teal-100 to-slate-100 flex items-center justify-center">
-                                <Tag size={40} className="text-teal-300 group-hover:text-teal-500 transition-colors" />
+                {/* Featured article */}
+                {featured && (
+                    <Reveal>
+                        <Link href={`/blog/${featured.slug}`} className="group grid overflow-hidden rounded-5xl border border-ink-900/[0.06] bg-white transition duration-500 ease-premium hover:shadow-lift lg:grid-cols-[1.2fr_1fr]">
+                            <div className="aspect-[16/10] overflow-hidden lg:aspect-auto">
+                                <BlogCover category={featured.category} eager className="transition-transform duration-700 ease-premium group-hover:scale-[1.03]" />
                             </div>
-                            <div className="p-6">
-                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${categoryColors[post.category] || 'bg-slate-100 text-slate-600'}`}>
-                                    {post.category}
-                                </span>
-                                <h3 className="text-lg font-bold text-slate-800 mt-3 mb-2 group-hover:text-teal-700 transition-colors line-clamp-2">
-                                    {post.title}
-                                </h3>
-                                <p className="text-sm text-slate-500 line-clamp-3 mb-4">{post.excerpt}</p>
-                                <div className="flex items-center gap-4 text-xs text-slate-400">
-                                    <span className="flex items-center gap-1"><User size={12} />{post.author}</span>
-                                    <span className="flex items-center gap-1">
-                                        <Calendar size={12} />
-                                        {new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                    </span>
+                            <div className="flex flex-col justify-center p-8 sm:p-12">
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">Featured · {featured.category}</p>
+                                <h2 className="mt-4 text-balance font-display text-3xl leading-tight text-ink-950 transition-colors group-hover:text-brand-700 md:text-4xl">{featured.title}</h2>
+                                <p className="mt-4 line-clamp-3 text-lg leading-relaxed text-ink-500">{featured.excerpt}</p>
+                                <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-400">
+                                    <span className="font-medium text-ink-700">{featured.author}</span>
+                                    <span className="flex items-center gap-1.5"><Calendar size={14} aria-hidden="true" />{formatDate(featured.published_at)}</span>
+                                    {featured.reviewer && (
+                                        <span className="flex items-center gap-1.5 text-brand-700"><ShieldCheck size={14} aria-hidden="true" /> Medically reviewed</span>
+                                    )}
                                 </div>
+                                <span className="link-arrow mt-8">Read article <ArrowRight size={16} aria-hidden="true" /></span>
                             </div>
                         </Link>
-                    ))}
-                </div>
+                    </Reveal>
+                )}
+
+                {/* Blog Grid */}
+                {rest.length > 0 && (
+                    <div className="mt-8 grid gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+                        {rest.map((post, i) => (
+                            <Reveal key={post.id} delay={(i % 3) * 100}>
+                                <Link href={`/blog/${post.slug}`} className="group block">
+                                    <div className="aspect-[16/10] overflow-hidden rounded-4xl">
+                                        <BlogCover category={post.category} className="transition-transform duration-700 ease-premium group-hover:scale-105" />
+                                    </div>
+                                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-600">{post.category}</p>
+                                    <h3 className="mt-2 line-clamp-2 text-xl font-semibold leading-snug tracking-tight text-ink-950 transition-colors group-hover:text-brand-700">
+                                        {post.title}
+                                    </h3>
+                                    <p className="mt-2 line-clamp-3 text-[0.9375rem] leading-relaxed text-ink-500">{post.excerpt}</p>
+                                    <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-400">
+                                        <span className="font-medium text-ink-600">{post.author}</span>
+                                        <span className="flex items-center gap-1"><Calendar size={12} aria-hidden="true" />{formatDate(post.published_at)}</span>
+                                    </div>
+                                </Link>
+                            </Reveal>
+                        ))}
+                    </div>
+                )}
+
+                {filtered.length === 0 && (
+                    <p className="rounded-4xl border border-dashed border-ink-900/15 py-16 text-center text-ink-400">No articles in this category yet.</p>
+                )}
             </section>
         </MainLayout>
     );

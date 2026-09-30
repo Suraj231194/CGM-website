@@ -1,56 +1,315 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Fonts are loaded from the document head (resources/views/app.blade.php) rather than an
+ * @import here, so the browser can start fetching them before this stylesheet arrives.
+ */
+
 @layer base {
   :root {
-    --color-brand: #0f766e;
-    --color-brand-light: #14b8a6;
-    --color-brand-dark: #115e59;
-    --color-accent: #2563eb;
-    --color-bg: #f7fafc;
+    --color-brand: #1d5859;
+    --color-brand-light: #2f8683;
+    --color-brand-dark: #173c3d;
+    --color-accent: #7de3d3;
+    --color-bg: #f7f6f2;
     --color-surface: #ffffff;
-    --color-text: #1e293b;
-    --color-text-muted: #64748b;
-    --color-border: #e2e8f0;
-    --color-success: #059669;
-    --color-warning: #d97706;
-    --color-danger: #dc2626;
+    --color-text: #122326;
+    --color-text-muted: #56696c;
+    --color-border: rgba(18, 35, 38, 0.08);
+    --color-success: #15803d;
+    --color-warning: #b45309;
+    --color-danger: #c2410c;
+    --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+    --header-height: 72px;
   }
+
+  html {
+    scroll-padding-top: calc(var(--header-height) + 24px);
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--color-text);
-    background-color: var(--color-bg);
+    @apply bg-canvas font-sans text-ink-900;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-ink-950;
+  }
+
+  /* One consistent, clearly visible keyboard focus ring everywhere. */
+  :focus-visible {
+    outline: 2px solid theme('colors.brand.500');
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
   }
 }
 
 @layer components {
+  /* ── Layout ───────────────────────────────────────────────── */
+  .container-page {
+    @apply mx-auto w-full max-w-page px-5 sm:px-6 lg:px-8;
+  }
+
+  .section-pad {
+    @apply py-20 md:py-28;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-600;
+  }
+
+  .eyebrow::before {
+    content: '';
+    @apply h-px w-6 bg-current opacity-60;
+  }
+
+  .eyebrow-light {
+    @apply text-glow;
+  }
+
+  /* ── Buttons ──────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-teal-700 text-white font-semibold rounded-xl hover:bg-teal-800 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full bg-brand-700 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
   }
+
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-white text-teal-700 font-semibold rounded-xl border-2 border-teal-700 hover:bg-teal-50 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full border border-ink-900/15 bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-900 transition duration-300 ease-premium hover:-translate-y-px hover:border-brand-600 hover:text-brand-700 hover:shadow-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:translate-y-0 disabled:pointer-events-none disabled:opacity-60;
   }
+
   .btn-accent {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center rounded-full bg-ink-950 px-6 py-3 text-[0.9375rem] font-semibold text-white shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-ink-800 hover:shadow-lift focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60;
   }
+
+  /* For dark sections: a bright filled pill and a quiet outlined one. */
+  .btn-light {
+    @apply inline-flex items-center justify-center rounded-full bg-white px-6 py-3 text-[0.9375rem] font-semibold text-ink-950 shadow-soft transition duration-300 ease-premium hover:-translate-y-px hover:bg-brand-50 hover:shadow-glow focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
+  }
+
+  .btn-ghost-light {
+    @apply inline-flex items-center justify-center rounded-full border border-white/25 px-6 py-3 text-[0.9375rem] font-semibold text-white transition duration-300 ease-premium hover:border-white/60 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-glow focus-visible:ring-offset-2 focus-visible:ring-offset-ink-950;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-900;
+  }
+
+  .link-arrow svg {
+    @apply transition-transform duration-300 ease-premium;
+  }
+
+  .link-arrow:hover svg {
+    @apply translate-x-1;
+  }
+
+  /* ── Surfaces ─────────────────────────────────────────────── */
   .card {
-    @apply bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden;
+    @apply overflow-hidden rounded-3xl border border-ink-900/[0.06] bg-white shadow-soft transition duration-300 ease-premium;
   }
+
+  .card-interactive {
+    @apply hover:-translate-y-1 hover:border-brand-600/20 hover:shadow-lift;
+  }
+
+  /*
+   * The product renders are shot on an off-white sweep (RGB 221-255, with a vignette).
+   * Lifting them slightly, multiplying them onto a tinted stage and feathering the edges
+   * lets the backdrop drop away, so the device sits on the surface instead of in a box.
+   */
+  .device-blend {
+    mix-blend-mode: multiply;
+    filter: brightness(1.07);
+    -webkit-mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
+  }
+
+  .product-stage {
+    @apply relative flex items-center justify-center overflow-hidden bg-gradient-to-b from-sand-100 to-sand-200/70;
+  }
+
+  .product-stage img {
+    @apply device-blend;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-ink-900/10 bg-white/80 px-3 py-1 text-xs font-medium text-ink-700 backdrop-blur;
+  }
+
+  .chip-brand {
+    @apply inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700;
+  }
+
+  /* ── Typography ───────────────────────────────────────────── */
   .section-heading {
-    @apply text-3xl md:text-4xl font-bold text-slate-800;
+    @apply font-display text-display-sm font-normal text-balance text-ink-950 md:text-display-md;
   }
+
   .section-subheading {
-    @apply text-lg text-slate-500 max-w-2xl;
+    @apply max-w-2xl text-lg leading-relaxed text-ink-500;
   }
+
   .glass-header {
-    @apply bg-white/80 backdrop-blur-lg border-b border-slate-200/50;
+    @apply border-b border-ink-900/[0.06] bg-canvas/80 backdrop-blur-xl backdrop-saturate-150;
+  }
+
+  /* ── Forms ────────────────────────────────────────────────── */
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink-800;
+  }
+
+  .field {
+    @apply block w-full rounded-2xl border-ink-900/15 bg-white px-4 py-3 text-[0.9375rem] text-ink-900 shadow-inset transition placeholder:text-ink-300 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
+  }
+
+  .field-error {
+    @apply mt-1.5 flex items-center gap-1.5 text-xs font-medium text-red-700;
+  }
+
+  /* ── Long-form content (product descriptions, articles) ───── */
+  .prose-content {
+    @apply max-w-none text-[1.0625rem] leading-[1.8] text-ink-700;
+  }
+
+  .prose-content > * + * {
+    @apply mt-5;
+  }
+
+  .prose-content h2 {
+    @apply mt-12 font-display text-3xl font-normal leading-tight tracking-tight text-ink-950;
+  }
+
+  .prose-content h3 {
+    @apply mt-10 text-xl font-semibold tracking-tight text-ink-900;
+  }
+
+  .prose-content h4 {
+    @apply mt-8 text-lg font-semibold text-ink-900;
+  }
+
+  .prose-content a {
+    @apply font-medium text-brand-700 underline decoration-brand-300 underline-offset-4 transition hover:decoration-brand-700;
+  }
+
+  .prose-content strong {
+    @apply font-semibold text-ink-900;
+  }
+
+  .prose-content ul,
+  .prose-content ol {
+    @apply space-y-2 pl-6;
+  }
+
+  .prose-content ul {
+    @apply list-disc marker:text-brand-500;
+  }
+
+  .prose-content ol {
+    @apply list-decimal marker:font-semibold marker:text-brand-600;
+  }
+
+  .prose-content blockquote {
+    @apply border-l-2 border-brand-500 pl-6 font-display text-xl italic text-ink-800;
+  }
+
+  .prose-content img {
+    @apply rounded-3xl;
+  }
+
+  .prose-content table {
+    @apply w-full border-collapse text-sm;
+  }
+
+  .prose-content th,
+  .prose-content td {
+    @apply border-b border-ink-900/10 px-3 py-2 text-left;
   }
 }
 
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Warm, luminous backdrop for light heroes; fades back to the page colour at its foot. */
+  .bg-aurora {
+    background-color: theme('colors.canvas');
+    background-image:
+      linear-gradient(to bottom, rgba(247, 246, 242, 0) 70%, rgba(247, 246, 242, 1) 100%),
+      radial-gradient(55% 60% at 85% 12%, rgba(125, 227, 211, 0.28), transparent 70%),
+      radial-gradient(40% 45% at 0% 45%, rgba(47, 134, 131, 0.08), transparent 70%),
+      radial-gradient(35% 40% at 50% 0%, rgba(255, 255, 255, 0.9), transparent 70%);
+  }
+
+  /* Deep ink backdrop with a soft teal radiance, for dark sections. */
+  .bg-radiance {
+    background-color: theme('colors.ink.950');
+    background-image:
+      radial-gradient(50% 60% at 80% 20%, rgba(47, 134, 131, 0.45), transparent 70%),
+      radial-gradient(40% 50% at 10% 100%, rgba(125, 227, 211, 0.14), transparent 70%);
+  }
+
+  .bg-grid-faint {
+    background-image:
+      linear-gradient(to right, rgba(18, 35, 38, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(18, 35, 38, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+
+  /* Fine film grain, laid over large colour fields so gradients never band. */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.35;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+
+  .mask-fade-x {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  }
+}
+
+/* ── Scroll reveal (driven by components/Reveal.jsx) ─────────── */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
+  transition:
+    opacity 0.9s var(--ease-premium),
+    transform 0.9s var(--ease-premium);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Legacy animation helpers (still used by account and checkout screens) ── */
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
@@ -72,7 +331,7 @@
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: fadeInUp 0.7s var(--ease-premium) forwards;
 }
 
 .animate-fade-in {
@@ -88,3 +347,27 @@
 .animate-delay-300 { animation-delay: 0.3s; opacity: 0; }
 .animate-delay-400 { animation-delay: 0.4s; opacity: 0; }
 .animate-delay-500 { animation-delay: 0.5s; opacity: 0; }
+
+/* Everything that moves stands still for people who ask it to. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal,
+  [class*='animate-delay-'] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@media print {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}

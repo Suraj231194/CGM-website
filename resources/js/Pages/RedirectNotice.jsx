@@ -1,10 +1,13 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
 import { useState, useEffect } from 'react';
-import { ExternalLink, ArrowLeft, AlertTriangle, Shield } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ShieldCheck } from 'lucide-react';
+
+const SECONDS = 5;
+const RING = 2 * Math.PI * 44;
 
 export default function RedirectNotice({ product, redirectLink }) {
-    const [countdown, setCountdown] = useState(5);
+    const [countdown, setCountdown] = useState(SECONDS);
     const [eventSent, setEventSent] = useState(false);
 
     useEffect(() => {
@@ -38,56 +41,63 @@ export default function RedirectNotice({ product, redirectLink }) {
         window.location.href = redirectLink.destination_url;
     };
 
+    let host = redirectLink.destination_url;
+    try {
+        host = new URL(redirectLink.destination_url).host;
+    } catch {
+        // Leave the raw value if it is not a parseable URL.
+    }
+
     return (
         <MainLayout>
             <Head title={`Leaving biogenixCGM — ${product.name}`} />
 
-            <section className="min-h-[70vh] flex items-center justify-center bg-gradient-to-br from-slate-100 to-teal-50 py-16">
-                <div className="max-w-lg mx-auto px-4 w-full">
-                    <div className="card p-8 text-center animate-fade-in-up">
-                        {/* Warning Icon */}
-                        <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <AlertTriangle size={32} className="text-amber-500" />
+            <section className="bg-aurora flex min-h-[72vh] items-center py-16">
+                <div className="container-page max-w-xl">
+                    <div className="animate-fade-in-up rounded-5xl bg-white p-8 text-center shadow-lift ring-1 ring-ink-900/[0.05] sm:p-12">
+                        {/* Countdown ring */}
+                        <div className="relative mx-auto h-28 w-28" role="timer" aria-live="polite" aria-label={`Redirecting in ${countdown} seconds`}>
+                            <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90" aria-hidden="true">
+                                <circle cx="50" cy="50" r="44" fill="none" stroke="#eef7f6" strokeWidth="6" />
+                                <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="44"
+                                    fill="none"
+                                    stroke="#1d5859"
+                                    strokeWidth="6"
+                                    strokeLinecap="round"
+                                    strokeDasharray={RING}
+                                    strokeDashoffset={RING * (1 - countdown / SECONDS)}
+                                    style={{ transition: 'stroke-dashoffset 1s linear' }}
+                                />
+                            </svg>
+                            <span className="absolute inset-0 flex flex-col items-center justify-center">
+                                <span className="font-display text-4xl leading-none text-ink-950">{countdown}</span>
+                                <span className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-400">seconds</span>
+                            </span>
                         </div>
 
-                        <h1 className="text-2xl font-bold text-slate-800 mb-3">
-                            You Are Leaving biogenixCGM
-                        </h1>
-                        <p className="text-slate-500 mb-6 leading-relaxed">
-                            You will be redirected to an external website to purchase the <strong className="text-slate-700">{product.name}</strong> via <strong className="text-slate-700">{redirectLink.label}</strong>. biogenixCGM is not responsible for the content or policies of external websites.
+                        <h1 className="mt-8 font-display text-3xl text-ink-950 sm:text-4xl">You Are Leaving biogenixCGM</h1>
+                        <p className="mt-4 leading-relaxed text-ink-500">
+                            You will be redirected to an external website to purchase the <strong className="font-semibold text-ink-800">{product.name}</strong> via <strong className="font-semibold text-ink-800">{redirectLink.label}</strong>. biogenixCGM is not responsible for the content or policies of external websites.
                         </p>
 
-                        {/* Countdown */}
-                        <div className="bg-slate-50 rounded-xl p-4 mb-6">
-                            <p className="text-sm text-slate-500">
-                                Redirecting automatically in
-                            </p>
-                            <p className="text-3xl font-bold text-teal-700 mt-1">{countdown}s</p>
-                        </div>
-
                         {/* Buttons */}
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <button
-                                onClick={handleContinue}
-                                className="btn-primary flex-1"
-                            >
-                                Continue to Store <ExternalLink size={16} className="ml-2" />
+                        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                            <button type="button" onClick={handleContinue} className="btn-primary flex-1 gap-2">
+                                Continue to Store <ExternalLink size={16} aria-hidden="true" />
                             </button>
-                            <button
-                                onClick={() => window.history.back()}
-                                className="btn-secondary flex-1"
-                            >
-                                <ArrowLeft size={16} className="mr-2" /> Go Back
+                            <button type="button" onClick={() => window.history.back()} className="btn-secondary flex-1 gap-2">
+                                <ArrowLeft size={16} aria-hidden="true" /> Go Back
                             </button>
                         </div>
 
                         {/* Destination */}
-                        <div className="mt-6 pt-5 border-t border-slate-100">
-                            <p className="text-xs text-slate-400 flex items-center justify-center gap-1">
-                                <Shield size={12} />
-                                Destination: {redirectLink.destination_url}
-                            </p>
-                        </div>
+                        <p className="mt-8 flex items-center justify-center gap-2 border-t border-ink-900/[0.06] pt-6 text-xs text-ink-400">
+                            <ShieldCheck size={14} className="text-brand-600" aria-hidden="true" />
+                            Destination: <span className="font-medium text-ink-600" title={redirectLink.destination_url}>{host}</span>
+                        </p>
                     </div>
                 </div>
             </section>

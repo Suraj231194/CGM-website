@@ -1,71 +1,118 @@
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
+import PageHero from '@/Components/PageHero';
 import SectionHeader from '@/Components/SectionHeader';
-import { Search, MousePointer, Smartphone, Headphones, ArrowRight } from 'lucide-react';
+import PhoneMockup from '@/Components/PhoneMockup';
+import Reveal from '@/Components/Reveal';
+import CtaBand from '@/Components/CtaBand';
+import SafetyNotice from '@/Components/SafetyNotice';
+import { ArrowRight, BellRing, FileBarChart, Headphones, MousePointer, Search, Smartphone, Users } from 'lucide-react';
 
 const steps = [
-    { icon: Search, number: '01', title: 'Choose Your Device', description: 'Start by exploring our product range. Whether you need continuous glucose monitoring, insulin delivery, or dose tracking — we have a device designed for your lifestyle. Use our comparison tool to see features side by side, or speak with our team for personalized guidance.', color: 'from-teal-500 to-teal-700' },
-    { icon: MousePointer, number: '02', title: 'Easy Application & Setup', description: 'Getting started is simple. Our sensors and pods apply in seconds with a one-touch applicator. Download the biogenixCGM app, follow the guided setup, and your device will be paired and ready within minutes. No complicated installations — just apply and go.', color: 'from-blue-500 to-blue-700' },
-    { icon: Smartphone, number: '03', title: 'Real-Time Monitoring', description: 'See your glucose data on your smartphone in real time. Customize alerts for highs, lows, and urgent events. Track trends, generate reports, and share your data with up to 10 followers — family, caregivers, or your healthcare team. All from one intuitive app.', color: 'from-cyan-500 to-cyan-700' },
-    { icon: Headphones, number: '04', title: 'Ongoing Support & Care', description: 'You are never alone on your diabetes journey. Our 24/7 support team is available by phone, email, and in-app chat. Access educational resources, video tutorials, and community forums. Schedule regular check-ins with your care team using shareable reports from the biogenixCGM app.', color: 'from-emerald-500 to-emerald-700' },
+    { icon: Search, number: '01', title: 'Choose Your Device', description: 'Start by exploring our product range. Whether you need continuous glucose monitoring, insulin delivery, or dose tracking — we have a device designed for your lifestyle. Use our comparison tool to see features side by side, or speak with our team for personalized guidance.', art: '/images/art/step-choose.svg', link: { label: 'Compare products', href: '/compare' } },
+    { icon: MousePointer, number: '02', title: 'Easy Application & Setup', description: 'Getting started is simple. Our sensors and pods apply in seconds with a one-touch applicator. Download the biogenixCGM app, follow the guided setup, and your device will be paired and ready within minutes. No complicated installations — just apply and go.', art: '/images/art/step-apply.svg', link: { label: 'Setup guides', href: '/resources' } },
+    { icon: Smartphone, number: '03', title: 'Real-Time Monitoring', description: 'See your glucose data on your smartphone in real time. Customize alerts for highs, lows, and urgent events. Track trends, generate reports, and share your data with up to 10 followers — family, caregivers, or your healthcare team. All from one intuitive app.', art: '/images/art/step-monitor.svg', link: { label: 'Explore the CGM', href: '/products' } },
+    { icon: Headphones, number: '04', title: 'Ongoing Support & Care', description: 'You are never alone on your diabetes journey. Our 24/7 support team is available by phone, email, and in-app chat. Access educational resources, video tutorials, and community forums. Schedule regular check-ins with your care team using shareable reports from the biogenixCGM app.', art: '/images/art/step-support.svg', link: { label: 'Visit support', href: '/support' } },
+];
+
+const appFeatures = [
+    { icon: BellRing, title: 'Alerts that fit your day', text: 'Customize alerts for highs, lows, and urgent events.' },
+    { icon: FileBarChart, title: 'Trends and reports', text: 'Track trends and generate reports to review with your care team.' },
+    { icon: Users, title: 'Share with the people who matter', text: 'Share your data with up to 10 followers — family, caregivers, or your healthcare team.' },
 ];
 
 export default function HowItWorks() {
     return (
         <MainLayout>
-            <Head title="How It Works — biogenixCGM" />
+            <Head title="How It Works" />
 
-            {/* Hero */}
-            <section className="bg-gradient-to-br from-teal-800 to-teal-900 py-16 md:py-20">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 animate-fade-in-up">
-                        How It Works
-                    </h1>
-                    <p className="text-lg text-teal-100 max-w-2xl mx-auto animate-fade-in-up animate-delay-100">
-                        From choosing your device to ongoing support — getting started with biogenixCGM is simple, seamless, and supported every step of the way.
-                    </p>
-                </div>
-            </section>
-
-            {/* Steps */}
-            <section className="max-w-5xl mx-auto px-4 py-20">
-                <div className="space-y-16">
-                    {steps.map((step, i) => (
-                        <div key={i} className={`flex flex-col md:flex-row items-center gap-10 ${i % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
-                            {/* Visual */}
-                            <div className="w-full md:w-1/2 flex justify-center">
-                                <div className={`w-48 h-48 bg-gradient-to-br ${step.color} rounded-3xl flex items-center justify-center shadow-2xl`}>
-                                    <step.icon size={64} className="text-white" />
-                                </div>
-                            </div>
-                            {/* Content */}
-                            <div className="w-full md:w-1/2">
-                                <span className="text-5xl font-extrabold text-slate-200">{step.number}</span>
-                                <h2 className="text-2xl font-bold text-slate-800 mt-2 mb-4">{step.title}</h2>
-                                <p className="text-slate-500 leading-relaxed">{step.description}</p>
-                            </div>
-                        </div>
+            <PageHero
+                eyebrow="How it works"
+                title="From first look to everyday life."
+                subtitle="From choosing your device to ongoing support — getting started with biogenixCGM is simple, seamless, and supported every step of the way."
+                breadcrumbs={[{ label: 'How It Works' }]}
+            >
+                <div className="flex flex-wrap justify-center gap-2">
+                    {steps.map((s) => (
+                        <a key={s.number} href={`#step-${s.number}`} className="chip transition hover:border-brand-600 hover:text-brand-700">
+                            <span className="font-display text-brand-600">{s.number}</span> {s.title}
+                        </a>
                     ))}
                 </div>
+            </PageHero>
+
+            {/* Steps */}
+            <section className="container-page section-pad">
+                <ol className="relative space-y-24 md:space-y-32">
+                    {steps.map((step, i) => (
+                        <li key={step.number} id={`step-${step.number}`} className="scroll-mt-28">
+                            <div className={`grid items-center gap-10 md:grid-cols-2 lg:gap-20 ${i % 2 === 1 ? 'md:[&>*:first-child]:order-2' : ''}`}>
+                                <Reveal className="overflow-hidden rounded-5xl border border-ink-900/[0.06] bg-white shadow-soft">
+                                    <img src={step.art} alt="" width="640" height="480" loading={i === 0 ? 'eager' : 'lazy'} decoding="async" className="aspect-[4/3] w-full object-cover" />
+                                </Reveal>
+                                <Reveal delay={120}>
+                                    <div className="flex items-center gap-4">
+                                        <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-700 text-white shadow-soft">
+                                            <step.icon size={22} aria-hidden="true" />
+                                        </span>
+                                        <span className="font-display text-5xl leading-none text-ink-100">{step.number}</span>
+                                    </div>
+                                    <h2 className="mt-6 font-display text-display-sm font-normal text-ink-950">{step.title}</h2>
+                                    <p className="mt-5 max-w-lg text-pretty text-lg leading-relaxed text-ink-500">{step.description}</p>
+                                    <Link href={step.link.href} className="link-arrow mt-7">
+                                        {step.link.label} <ArrowRight size={16} aria-hidden="true" />
+                                    </Link>
+                                </Reveal>
+                            </div>
+                        </li>
+                    ))}
+                </ol>
             </section>
 
-            {/* CTA */}
-            <section className="bg-gradient-to-r from-teal-700 to-teal-900 py-16">
-                <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h2 className="text-3xl font-bold text-white mb-4">Ready to Get Started?</h2>
-                    <p className="text-teal-100 mb-8 max-w-xl mx-auto">
-                        Explore our products or connect with our team to find the right solution for you.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link href="/products" className="inline-flex items-center justify-center px-8 py-4 bg-white text-teal-800 font-bold rounded-xl hover:bg-teal-50 transition-all shadow-xl">
-                            Explore Products <ArrowRight size={16} className="ml-2" />
-                        </Link>
-                        <Link href="/contact" className="inline-flex items-center justify-center px-8 py-4 border-2 border-teal-300 text-white font-semibold rounded-xl hover:bg-white/10 transition-all">
-                            Request Information
-                        </Link>
+            {/* The app */}
+            <section className="bg-radiance grain relative overflow-hidden text-white">
+                <div className="container-page section-pad relative grid items-center gap-16 lg:grid-cols-2">
+                    <div>
+                        <SectionHeader
+                            tone="dark"
+                            eyebrow="The companion app"
+                            title="Everything you need, in one intuitive app."
+                            subtitle="See your glucose data on your smartphone in real time — on iOS and Android."
+                            className="!mb-10"
+                        />
+                        <ul className="space-y-6">
+                            {appFeatures.map((f, i) => (
+                                <Reveal as="li" key={f.title} delay={i * 100} className="flex gap-4">
+                                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-glow ring-1 ring-white/10">
+                                        <f.icon size={20} aria-hidden="true" />
+                                    </span>
+                                    <span>
+                                        <span className="block font-semibold text-white">{f.title}</span>
+                                        <span className="mt-1 block text-[0.9375rem] leading-relaxed text-white/60">{f.text}</span>
+                                    </span>
+                                </Reveal>
+                            ))}
+                        </ul>
                     </div>
+                    <Reveal className="relative flex justify-center">
+                        <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-glow/10 blur-3xl" aria-hidden="true" />
+                        <div className="relative">
+                            <PhoneMockup />
+                            <p className="mt-4 text-center text-xs text-white/45">Illustrative app display</p>
+                        </div>
+                    </Reveal>
                 </div>
             </section>
+
+            <CtaBand
+                eyebrow="Get started"
+                title="Ready to Get Started?"
+                text="Explore our products or connect with our team to find the right solution for you."
+                primary={{ label: 'Explore products', href: '/products' }}
+                secondary={{ label: 'Request information', href: '/contact' }}
+            />
+
+            <SafetyNotice />
         </MainLayout>
     );
 }

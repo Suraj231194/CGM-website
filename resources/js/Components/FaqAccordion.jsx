@@ -1,44 +1,62 @@
-import { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { useId, useState } from 'react';
+import { Plus } from 'lucide-react';
 
 export default function FaqAccordion({ faqs }) {
     const [openIndex, setOpenIndex] = useState(null);
+    const baseId = useId();
 
     return (
-        <div className="space-y-3">
-            {faqs.map((faq, index) => (
-                <div
-                    key={faq.id || index}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden transition-all duration-300 hover:border-teal-200"
-                >
-                    <button
-                        onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                        className="w-full flex items-center justify-between p-5 text-left focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-inset rounded-xl"
-                        aria-expanded={openIndex === index}
-                    >
-                        <span className="text-sm font-semibold text-slate-800 pr-4">{faq.question}</span>
-                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
-                            {openIndex === index ? (
-                                <Minus size={16} className="text-teal-700" />
-                            ) : (
-                                <Plus size={16} className="text-slate-500" />
-                            )}
-                        </span>
-                    </button>
-                    {openIndex === index && (
-                        <div className="px-5 pb-5 animate-fade-in">
-                            <div className="border-t border-slate-100 pt-4">
-                                <p className="text-sm text-slate-600 leading-relaxed">{faq.answer}</p>
-                                {faq.category && (
-                                    <span className="inline-block mt-3 text-xs font-medium text-teal-700 bg-teal-50 px-3 py-1 rounded-full">
-                                        {faq.category}
-                                    </span>
-                                )}
+        <div className="divide-y divide-ink-900/[0.08] border-y border-ink-900/[0.08]">
+            {faqs.map((faq, index) => {
+                const open = openIndex === index;
+                const panelId = `${baseId}-panel-${index}`;
+                const buttonId = `${baseId}-button-${index}`;
+
+                return (
+                    <div key={faq.id || index}>
+                        <h3>
+                            <button
+                                id={buttonId}
+                                type="button"
+                                onClick={() => setOpenIndex(open ? null : index)}
+                                className="group flex w-full items-center justify-between gap-6 py-6 text-left"
+                                aria-expanded={open}
+                                aria-controls={panelId}
+                            >
+                                <span className={`text-[1.0625rem] font-medium transition-colors ${open ? 'text-brand-700' : 'text-ink-900 group-hover:text-brand-700'}`}>
+                                    {faq.question}
+                                </span>
+                                <span
+                                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition duration-500 ease-premium ${
+                                        open ? 'rotate-45 border-brand-700 bg-brand-700 text-white' : 'border-ink-900/15 text-ink-700 group-hover:border-brand-700'
+                                    }`}
+                                    aria-hidden="true"
+                                >
+                                    <Plus size={16} />
+                                </span>
+                            </button>
+                        </h3>
+                        {/*
+                          * Animating grid rows from 0fr to 1fr gives a true height transition without
+                          * measuring. `invisible` flips only once the close finishes, and keeps collapsed
+                          * answers out of the tab order and the accessibility tree.
+                          */}
+                        <div
+                            id={panelId}
+                            role="region"
+                            aria-labelledby={buttonId}
+                            className={`grid transition-[grid-template-rows,visibility] duration-500 ease-premium ${open ? 'visible grid-rows-[1fr]' : 'invisible grid-rows-[0fr]'}`}
+                        >
+                            <div className="overflow-hidden">
+                                <div className="pb-6 pr-12">
+                                    <p className="text-[0.9375rem] leading-relaxed text-ink-600">{faq.answer}</p>
+                                    {faq.category && <span className="chip-brand mt-4">{faq.category}</span>}
+                                </div>
                             </div>
                         </div>
-                    )}
-                </div>
-            ))}
+                    </div>
+                );
+            })}
         </div>
     );
 }

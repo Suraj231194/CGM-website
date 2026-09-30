@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="t">
+  <title id="t">A phone showing a glucose trace inside the target range, with an alert card and shared followers</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f6f2"/>
+      <stop offset="1" stop-color="#e6f2f0"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0.42" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7de3d3" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#7de3d3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#236d6c"/>
+      <stop offset="1" stop-color="#4fa19d"/>
+    </linearGradient>
+    <linearGradient id="area" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f8683" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#2f8683" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#122326" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="480" fill="url(#bg)"/>
+  <circle cx="270" cy="240" r="250" fill="url(#halo)"/>
+
+  <!-- Phone -->
+  <g transform="translate(176 36)" filter="url(#shadow)">
+    <rect width="196" height="408" rx="36" fill="#071619"/>
+    <rect x="9" y="9" width="178" height="390" rx="29" fill="#f7f6f2"/>
+    <rect x="68" y="18" width="60" height="14" rx="7" fill="#071619"/>
+
+    <!-- Reading card -->
+    <rect x="22" y="52" width="152" height="176" rx="22" fill="#ffffff"/>
+    <rect x="36" y="68" width="46" height="7" rx="3.5" fill="#c7d2d4"/>
+    <text x="36" y="124" font-family="Georgia, 'Times New Roman', serif" font-size="46" fill="#071619">112</text>
+    <rect x="118" y="100" width="44" height="18" rx="9" fill="#d6ecea"/>
+    <path d="M128 109 h18 m-6 -5 l6 5 l-6 5" fill="none" stroke="#1d5859" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="36" y="136" width="84" height="6" rx="3" fill="#e3e9ea"/>
+    <rect x="30" y="160" width="136" height="44" fill="#2f8683" opacity="0.09"/>
+    <line x1="30" x2="166" y1="160" y2="160" stroke="#122326" stroke-opacity="0.25" stroke-dasharray="4 4"/>
+    <line x1="30" x2="166" y1="204" y2="204" stroke="#122326" stroke-opacity="0.25" stroke-dasharray="2 4"/>
+    <path d="M30 196 C 44 192, 50 170, 62 172 S 78 192, 90 190 S 104 166, 116 168 S 134 188, 146 184 S 160 178, 166 180 L166 216 L30 216 Z" fill="url(#area)"/>
+    <path d="M30 196 C 44 192, 50 170, 62 172 S 78 192, 90 190 S 104 166, 116 168 S 134 188, 146 184 S 160 178, 166 180" fill="none" stroke="url(#line)" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="166" cy="180" r="5" fill="#236d6c" stroke="#ffffff" stroke-width="2"/>
+
+    <!-- Time in range -->
+    <rect x="22" y="240" width="152" height="62" rx="18" fill="#ffffff"/>
+    <rect x="36" y="254" width="60" height="7" rx="3.5" fill="#344447"/>
+    <rect x="36" y="272" width="4" height="10" rx="2" fill="#344447"/>
+    <rect x="42" y="272" width="104" height="10" rx="2" fill="#2f8683"/>
+    <rect x="148" y="272" width="12" height="10" rx="2" fill="#f5b54a"/>
+    <rect x="36" y="288" width="36" height="5" rx="2.5" fill="#e3e9ea"/>
+
+    <!-- Tiles -->
+    <rect x="22" y="314" width="72" height="56" rx="16" fill="#ffffff"/>
+    <rect x="102" y="314" width="72" height="56" rx="16" fill="#ffffff"/>
+    <circle cx="40" cy="332" r="7" fill="#d6ecea"/>
+    <circle cx="120" cy="332" r="7" fill="#d6ecea"/>
+    <rect x="34" y="348" width="46" height="6" rx="3" fill="#c7d2d4"/>
+    <rect x="114" y="348" width="46" height="6" rx="3" fill="#c7d2d4"/>
+  </g>
+
+  <!-- Alert card -->
+  <g transform="translate(372 108)" filter="url(#shadow)">
+    <rect width="216" height="84" rx="22" fill="#ffffff"/>
+    <circle cx="40" cy="42" r="20" fill="#1d5859"/>
+    <path d="M32 47 h16 l-2 -3 v-6 a6 6 0 0 0 -12 0 v6 z M37 50 a3 3 0 0 0 6 0" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/>
+    <rect x="72" y="28" width="104" height="9" rx="4.5" fill="#122326"/>
+    <rect x="72" y="46" width="124" height="7" rx="3.5" fill="#c7d2d4"/>
+    <rect x="72" y="59" width="84" height="7" rx="3.5" fill="#e3e9ea"/>
+  </g>
+
+  <!-- Followers card -->
+  <g transform="translate(392 262)" filter="url(#shadow)">
+    <rect width="196" height="104" rx="22" fill="#ffffff"/>
+    <rect x="22" y="22" width="86" height="8" rx="4" fill="#344447"/>
+    <g stroke="#ffffff" stroke-width="3">
+      <circle cx="38" cy="66" r="16" fill="#7fbfbb"/>
+      <circle cx="62" cy="66" r="16" fill="#2f8683"/>
+      <circle cx="86" cy="66" r="16" fill="#1d5859"/>
+    </g>
+    <circle cx="116" cy="66" r="16" fill="#eef7f6" stroke="#afd9d6" stroke-width="2" stroke-dasharray="3 3"/>
+    <path d="M110 66 h12 m-6 -6 v12" stroke="#1d5859" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M150 70 C 158 70, 158 58, 166 58 S 172 66, 176 64" fill="none" stroke="#2f8683" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

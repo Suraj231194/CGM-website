@@ -1,25 +1,26 @@
 import { Link } from '@inertiajs/react';
-import { AlertTriangle } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
+/** A compact safety callout for use inside a page; links to the full notice on Support. */
 export default function SafetyDisclaimer() {
     return (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 md:p-8">
+        <div className="rounded-3xl border border-ink-900/[0.07] bg-white p-6 shadow-soft md:p-8">
             <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <AlertTriangle className="w-5 h-5 text-amber-600" />
-                </div>
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-brand-50 text-brand-700">
+                    <ShieldCheck size={20} aria-hidden="true" />
+                </span>
                 <div>
-                    <h4 className="text-sm font-semibold text-amber-800 mb-1">Important Safety Information</h4>
-                    <p className="text-sm text-amber-700 leading-relaxed">
-                        biogenixCGM products are prescription medical devices intended for the management of diabetes.
-                        They are not a substitute for professional medical advice. Please consult your healthcare provider
-                        before making any changes to your diabetes management plan.
+                    <h4 className="mb-1 text-sm font-semibold text-ink-900">Important safety information</h4>
+                    <p className="text-sm leading-relaxed text-ink-600">
+                        biogenixCGM products are medical devices intended for the management of diabetes. They are not a
+                        substitute for professional medical advice. Please consult your healthcare provider before making
+                        any changes to your diabetes management plan.
                     </p>
                     <Link
-                        href="/safety"
-                        className="inline-flex items-center mt-3 text-sm font-medium text-amber-800 hover:text-amber-900 underline underline-offset-2 transition-colors duration-300"
+                        href="/support#safety"
+                        className="mt-3 inline-flex items-center text-sm font-semibold text-brand-700 underline decoration-brand-300 underline-offset-4 transition hover:decoration-brand-700"
                     >
-                        View Full Safety Information
+                        View full safety information
                     </Link>
                 </div>
             </div>

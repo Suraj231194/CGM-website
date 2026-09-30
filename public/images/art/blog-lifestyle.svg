@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="t">
+  <title id="t">Abstract cover art: a flight path over rolling hills at sunrise, with a suitcase carrying diabetes devices</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7f6f2"/>
+      <stop offset="1" stop-color="#f3e6d2"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f8d48f"/>
+      <stop offset="0.7" stop-color="#f5c46a" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#f5c46a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="case" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f8683"/>
+      <stop offset="1" stop-color="#1d5859"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="16" flood-color="#122326" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#sky)"/>
+  <circle cx="520" cy="270" r="170" fill="url(#sun)"/>
+  <circle cx="520" cy="270" r="92" fill="#f8d48f"/>
+
+  <!-- Hills -->
+  <path d="M0 330 C 120 280, 220 300, 330 320 S 560 270, 800 300 V500 H0 Z" fill="#afd9d6"/>
+  <path d="M0 380 C 140 340, 260 360, 400 380 S 640 340, 800 360 V500 H0 Z" fill="#4fa19d"/>
+  <path d="M0 430 C 160 400, 300 420, 460 436 S 700 410, 800 420 V500 H0 Z" fill="#1d5859"/>
+
+  <!-- Flight path -->
+  <path d="M60 250 C 200 90, 420 70, 640 150" fill="none" stroke="#122326" stroke-opacity="0.35" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
+  <g transform="translate(646 152) rotate(22)">
+    <path d="M-22 0 L 22 0 M-2 0 L -14 -18 M-2 0 L -14 18 M-18 0 L -24 -8 M-18 0 L -24 8" stroke="#122326" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <circle cx="60" cy="250" r="8" fill="#ffffff" stroke="#122326" stroke-width="3"/>
+
+  <!-- Suitcase with device stickers -->
+  <g transform="translate(160 262)" filter="url(#shadow)">
+    <rect x="46" y="-26" width="68" height="30" rx="14" fill="none" stroke="#122326" stroke-width="8"/>
+    <rect x="0" y="0" width="160" height="150" rx="24" fill="url(#case)"/>
+    <rect x="30" y="0" width="10" height="150" fill="#173c3d" opacity="0.5"/>
+    <rect x="120" y="0" width="10" height="150" fill="#173c3d" opacity="0.5"/>
+    <circle cx="80" cy="58" r="26" fill="#ffffff"/>
+    <circle cx="80" cy="58" r="15" fill="none" stroke="#2f8683" stroke-width="7"/>
+    <rect x="52" y="100" width="56" height="26" rx="13" fill="#f7f6f2"/>
+    <rect x="52" y="113" width="56" height="13" rx="6" fill="#7de3d3"/>
+  </g>
+</svg>

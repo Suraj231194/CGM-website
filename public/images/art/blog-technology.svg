@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="t">
+  <title id="t">Abstract cover art: a sensor and an insulin pod connected in a loop through a phone</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173c3d"/>
+      <stop offset="1" stop-color="#071619"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#7de3d3" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#7de3d3" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0 H0 V40" fill="none" stroke="#7de3d3" stroke-opacity="0.07"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#7de3d3"/>
+    </marker>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect width="800" height="500" fill="url(#grid)"/>
+  <circle cx="400" cy="250" r="240" fill="url(#glow)"/>
+
+  <!-- The loop -->
+  <g fill="none" stroke="#7de3d3" stroke-width="3" stroke-linecap="round" marker-end="url(#arrow)">
+    <path d="M232 196 C 280 110, 340 92, 356 96"/>
+    <path d="M444 96 C 470 92, 530 110, 570 196"/>
+    <path d="M560 318 C 500 420, 300 420, 240 318"/>
+  </g>
+
+  <!-- Sensor node -->
+  <g transform="translate(200 256)" filter="url(#shadow)">
+    <circle r="64" fill="#ffffff"/>
+  </g>
+  <circle cx="200" cy="256" r="38" fill="none" stroke="#2f8683" stroke-width="14"/>
+  <circle cx="200" cy="256" r="20" fill="#f7f6f2"/>
+
+  <!-- Pod node -->
+  <g transform="translate(600 256)" filter="url(#shadow)">
+    <rect x="-70" y="-42" width="140" height="84" rx="40" fill="#ffffff"/>
+  </g>
+  <clipPath id="pod"><rect x="530" y="214" width="140" height="84" rx="40"/></clipPath>
+  <rect x="530" y="266" width="140" height="32" fill="#2f8683" clip-path="url(#pod)"/>
+  <rect x="572" y="232" width="56" height="20" rx="10" fill="#d6ecea"/>
+
+  <!-- Phone hub -->
+  <g transform="translate(346 40)" filter="url(#shadow)">
+    <rect width="108" height="200" rx="22" fill="#ffffff"/>
+    <rect x="8" y="8" width="92" height="184" rx="16" fill="#f7f6f2"/>
+    <rect x="16" y="24" width="76" height="64" rx="12" fill="#ffffff"/>
+    <rect x="16" y="40" width="76" height="24" fill="#2f8683" opacity="0.1"/>
+    <path d="M22 62 C 34 54, 40 44, 52 48 S 68 62, 78 52 S 86 46, 88 48" fill="none" stroke="#236d6c" stroke-width="3" stroke-linecap="round"/>
+    <rect x="16" y="98" width="76" height="34" rx="10" fill="#1d5859"/>
+    <rect x="26" y="110" width="44" height="8" rx="4" fill="#ffffff" opacity="0.85"/>
+    <rect x="16" y="140" width="36" height="36" rx="10" fill="#ffffff"/>
+    <rect x="56" y="140" width="36" height="36" rx="10" fill="#ffffff"/>
+  </g>
+
+  <!-- Data packets travelling the loop -->
+  <circle cx="300" cy="118" r="6" fill="#7de3d3"/>
+  <circle cx="510" cy="124" r="6" fill="#7de3d3" opacity="0.7"/>
+  <circle cx="400" cy="394" r="6" fill="#7de3d3" opacity="0.5"/>
+</svg>

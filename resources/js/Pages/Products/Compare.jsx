@@ -1,9 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/MainLayout';
-import SectionHeader from '@/Components/SectionHeader';
-import { Check, ArrowRight } from 'lucide-react';
+import PageHero from '@/Components/PageHero';
+import Reveal from '@/Components/Reveal';
+import CtaBand from '@/Components/CtaBand';
+import SafetyNotice from '@/Components/SafetyNotice';
+import { ArrowRight, Check } from 'lucide-react';
 
-export default function Compare({ products }) {
+export default function Compare({ products = [] }) {
     // Build comparison rows grouped by category
     const allLabels = {};
     products.forEach((p) => {
@@ -21,83 +24,109 @@ export default function Compare({ products }) {
 
     return (
         <MainLayout>
-            <Head title="Compare Products — biogenixCGM" />
+            <Head title="Compare Products" />
 
-            {/* Hero */}
-            <section className="bg-gradient-to-br from-slate-50 to-teal-50 py-16">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-4 animate-fade-in-up">
-                        Compare Our Products
-                    </h1>
-                    <p className="text-lg text-slate-500 max-w-2xl mx-auto animate-fade-in-up animate-delay-100">
-                        See how our devices stack up side by side to find the perfect fit for your diabetes management needs.
-                    </p>
-                </div>
-            </section>
+            <PageHero
+                eyebrow="Compare"
+                title="Compare Our Products"
+                subtitle="See how our devices stack up side by side to find the perfect fit for your diabetes management needs."
+                breadcrumbs={[{ label: 'Products', href: '/products' }, { label: 'Compare' }]}
+            />
 
             {/* Comparison Table */}
-            <section className="max-w-7xl mx-auto px-4 py-16">
-                <div className="overflow-x-auto">
-                    <div className="min-w-[700px]">
-                        {/* Product Headers */}
-                        <div className="grid grid-cols-4 gap-4 mb-6">
-                            <div></div>
-                            {products.map((p) => (
-                                <div key={p.id} className="text-center card p-6">
-                                    <div className="w-20 h-20 bg-gradient-to-br from-teal-50 to-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                        <img src={p.image_url} alt={p.name} className="h-14 w-auto object-contain" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-slate-800">{p.name}</h3>
-                                    <p className="text-xs text-slate-500 mt-1 line-clamp-2">{p.short_description}</p>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Comparison Rows by Category */}
-                        {categories.map((category) => (
-                            <div key={category} className="mb-6">
-                                <div className="bg-gradient-to-r from-teal-700 to-teal-800 rounded-xl px-6 py-3 mb-3">
-                                    <h4 className="text-sm font-semibold text-white uppercase tracking-wider">{category}</h4>
-                                </div>
-                                {rows
-                                    .filter((r) => r.category === category)
-                                    .map((row, i) => (
-                                        <div key={row.label} className={`grid grid-cols-4 gap-4 px-4 py-3.5 rounded-xl ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
-                                            <div className="text-sm font-medium text-slate-700 flex items-center">{row.label}</div>
-                                            {products.map((p) => {
-                                                const cell = row.values[p.id];
-                                                return (
-                                                    <div key={p.id} className="text-center text-sm">
-                                                        {cell ? (
-                                                            <span className={`inline-flex items-center gap-1 ${cell.highlight ? 'text-teal-700 font-semibold' : 'text-slate-600'}`}>
-                                                                {cell.highlight && <Check size={14} className="text-teal-600" />}
-                                                                {cell.value}
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-slate-300">—</span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
+            <section className="container-page section-pad">
+                <Reveal className="rounded-5xl border border-ink-900/[0.06] bg-white shadow-soft">
+                    <div className="overflow-x-auto rounded-5xl">
+                        <table className="w-full min-w-[760px] border-separate border-spacing-0 text-left">
+                            <caption className="sr-only">Side-by-side comparison of biogenixCGM products</caption>
+                            {/* Product Headers */}
+                            <thead>
+                                <tr>
+                                    <th scope="col" className="sticky left-0 z-20 w-[22%] bg-white p-6 align-bottom md:p-8">
+                                        <span className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-400">{products.length} products</span>
+                                    </th>
+                                    {products.map((p) => (
+                                        <th key={p.id} scope="col" className="p-6 align-top font-normal md:p-8">
+                                            <div className="product-stage mx-auto aspect-square w-28 rounded-3xl md:w-32">
+                                                <img src={p.image_url} alt="" width="1024" height="1024" loading="lazy" className="h-[86%] w-auto object-contain" />
+                                            </div>
+                                            <p className="mt-5 text-center font-display text-2xl text-ink-950">{p.name}</p>
+                                            <p className="mx-auto mt-2 line-clamp-2 max-w-[16rem] text-center text-sm leading-relaxed text-ink-500">{p.short_description}</p>
+                                        </th>
                                     ))}
-                            </div>
-                        ))}
+                                </tr>
+                            </thead>
 
-                        {/* CTA Row */}
-                        <div className="grid grid-cols-4 gap-4 mt-6">
-                            <div></div>
-                            {products.map((p) => (
-                                <div key={p.id} className="text-center">
-                                    <Link href={`/products/${p.slug}`} className="btn-primary text-sm w-full">
-                                        View {p.name} <ArrowRight size={14} className="ml-1" />
-                                    </Link>
-                                </div>
+                            {/* Comparison Rows by Category */}
+                            {categories.map((category) => (
+                                <tbody key={category}>
+                                    <tr>
+                                        <th colSpan={products.length + 1} scope="colgroup" className="border-t border-ink-900/[0.06] bg-sand-50 px-6 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-brand-700 md:px-8">
+                                            {category}
+                                        </th>
+                                    </tr>
+                                    {rows
+                                        .filter((r) => r.category === category)
+                                        .map((row) => (
+                                            <tr key={row.label} className="group">
+                                                <th scope="row" className="sticky left-0 z-10 border-t border-ink-900/[0.06] bg-white px-6 py-4 text-[0.9375rem] font-medium text-ink-800 group-hover:bg-sand-50 md:px-8">
+                                                    {row.label}
+                                                </th>
+                                                {products.map((p) => {
+                                                    const cell = row.values[p.id];
+                                                    return (
+                                                        <td key={p.id} className="border-t border-ink-900/[0.06] px-6 py-4 text-center text-[0.9375rem] group-hover:bg-sand-50/60 md:px-8">
+                                                            {cell ? (
+                                                                <span className={`inline-flex items-center gap-2 ${cell.highlight ? 'font-semibold text-ink-950' : 'text-ink-500'}`}>
+                                                                    {cell.highlight && (
+                                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-700 text-white">
+                                                                            <Check size={12} strokeWidth={3} aria-hidden="true" />
+                                                                            <span className="sr-only">Highlighted:</span>
+                                                                        </span>
+                                                                    )}
+                                                                    {cell.value}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-ink-200" aria-label="Not applicable">—</span>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        ))}
+                                </tbody>
                             ))}
-                        </div>
+
+                            {/* CTA Row */}
+                            <tfoot>
+                                <tr>
+                                    <td className="sticky left-0 border-t border-ink-900/[0.06] bg-white p-6 md:p-8" />
+                                    {products.map((p) => (
+                                        <td key={p.id} className="border-t border-ink-900/[0.06] p-6 text-center md:p-8">
+                                            <Link href={`/products/${p.slug}`} className="btn-primary w-full gap-1.5 !px-4 text-sm">
+                                                View {p.name} <ArrowRight size={15} aria-hidden="true" />
+                                            </Link>
+                                        </td>
+                                    ))}
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
-                </div>
+                </Reveal>
+                <p className="mt-5 flex items-center justify-center gap-2 text-sm text-ink-400">
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-700 text-white"><Check size={10} strokeWidth={3} aria-hidden="true" /></span>
+                    marks a standout capability for that device.
+                </p>
             </section>
+
+            <CtaBand
+                eyebrow="Still deciding?"
+                title="Talk it through with a specialist."
+                text="Every therapy is personal. Our team can help you weigh the options with your healthcare provider."
+                secondary={{ label: 'Explore products', href: '/products' }}
+            />
+
+            <SafetyNotice />
         </MainLayout>
     );
 }

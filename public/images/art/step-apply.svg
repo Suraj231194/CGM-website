@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="t">
+  <title id="t">A sensor worn on the upper arm, sending readings wirelessly to a phone</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e6f2f0"/>
+      <stop offset="1" stop-color="#f3f1ea"/>
+    </linearGradient>
+    <linearGradient id="skin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e9ccb4"/>
+      <stop offset="1" stop-color="#d7b08f"/>
+    </linearGradient>
+    <linearGradient id="sleeve" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1f3033"/>
+      <stop offset="1" stop-color="#122326"/>
+    </linearGradient>
+    <linearGradient id="teal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f8683"/>
+      <stop offset="1" stop-color="#1d5859"/>
+    </linearGradient>
+    <radialGradient id="pulse" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0.55" stop-color="#7de3d3" stop-opacity="0"/>
+      <stop offset="1" stop-color="#7de3d3" stop-opacity="0.35"/>
+    </radialGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#122326" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="640" height="480" fill="url(#bg)"/>
+
+  <!-- Upper arm, shoulder at the top, tapering toward the elbow -->
+  <path d="M104 -20 L 356 -20 C 366 80, 358 200, 338 300 C 326 370, 310 430, 300 500 L 76 500 C 84 420, 92 340, 100 260 C 108 170, 100 80, 104 -20 Z" fill="url(#skin)"/>
+  <path d="M112 120 C 116 200, 112 300, 104 400 C 102 430, 100 460, 98 500 L 128 500 C 132 420, 140 320, 144 230 C 146 180, 146 140, 150 120 Z" fill="#ffffff" opacity="0.16"/>
+  <path d="M338 300 C 326 370, 310 430, 300 500 L 280 500 C 292 430, 306 370, 318 300 C 330 230, 338 170, 340 120 L 354 120 C 356 190, 350 250, 338 300 Z" fill="#8a5a3c" opacity="0.10"/>
+  <!-- T-shirt sleeve -->
+  <path d="M92 -20 L 368 -20 L 362 104 C 280 126, 186 126, 98 104 Z" fill="url(#sleeve)"/>
+  <path d="M98 104 C 186 126, 280 126, 362 104" fill="none" stroke="#344447" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- Wireless pulse around the sensor -->
+  <circle cx="226" cy="262" r="118" fill="url(#pulse)"/>
+  <g fill="none" stroke="#2f8683" stroke-linecap="round">
+    <circle cx="226" cy="262" r="78" stroke-opacity="0.25" stroke-width="2"/>
+    <circle cx="226" cy="262" r="104" stroke-opacity="0.14" stroke-width="2"/>
+  </g>
+
+  <!-- Sensor -->
+  <g transform="translate(226 262) rotate(-8)" filter="url(#shadow)">
+    <ellipse rx="62" ry="50" fill="#f7f6f2" opacity="0.95"/>
+    <ellipse rx="44" ry="37" fill="#ffffff"/>
+    <ellipse rx="27" ry="22" fill="none" stroke="url(#teal)" stroke-width="10"/>
+    <ellipse rx="15" ry="12" fill="#f7f6f2"/>
+    <circle cx="-30" cy="10" r="3" fill="#2f8683"/>
+  </g>
+
+  <!-- Signal arcs toward the phone -->
+  <g fill="none" stroke="#1d5859" stroke-width="5" stroke-linecap="round">
+    <path d="M374 214 a40 40 0 0 1 22 -30" stroke-opacity="0.35"/>
+    <path d="M388 238 a70 70 0 0 1 40 -54" stroke-opacity="0.55"/>
+    <path d="M404 262 a100 100 0 0 1 56 -78" stroke-opacity="0.8"/>
+  </g>
+
+  <!-- Phone -->
+  <g transform="translate(488 112) rotate(8)" filter="url(#shadow)">
+    <rect x="0" y="0" width="112" height="222" rx="22" fill="#071619"/>
+    <rect x="6" y="6" width="100" height="210" rx="17" fill="#f7f6f2"/>
+    <rect x="38" y="12" width="36" height="8" rx="4" fill="#071619"/>
+    <rect x="16" y="32" width="80" height="70" rx="14" fill="#ffffff"/>
+    <rect x="24" y="42" width="30" height="6" rx="3" fill="#c7d2d4"/>
+    <rect x="24" y="56" width="44" height="22" rx="6" fill="#122326"/>
+    <rect x="72" y="60" width="16" height="10" rx="5" fill="#d6ecea"/>
+    <rect x="24" y="84" width="56" height="5" rx="2.5" fill="#e3e9ea"/>
+    <rect x="16" y="110" width="80" height="58" rx="14" fill="#ffffff"/>
+    <rect x="16" y="124" width="80" height="24" fill="#2f8683" opacity="0.1"/>
+    <path d="M22 146 C 34 138, 40 126, 52 130 S 68 146, 78 136 S 88 128, 92 132" fill="none" stroke="#236d6c" stroke-width="3" stroke-linecap="round"/>
+    <rect x="16" y="176" width="38" height="30" rx="10" fill="#ffffff"/>
+    <rect x="58" y="176" width="38" height="30" rx="10" fill="#ffffff"/>
+    <circle cx="28" cy="188" r="4" fill="#2f8683"/>
+    <circle cx="70" cy="188" r="4" fill="#2f8683"/>
+  </g>
+
+  <!-- Water droplet and clock accents (water resistance, long wear) -->
+  <g transform="translate(468 386)" filter="url(#shadow)">
+    <rect x="-66" y="-26" width="132" height="52" rx="26" fill="#ffffff"/>
+    <path d="M-38 -12 C -38 -12, -50 2, -50 8 a12 12 0 0 0 24 0 c0 -6 -12 -20 -12 -20 z" fill="#2f8683"/>
+    <rect x="-18" y="-6" width="70" height="12" rx="6" fill="#c7d2d4"/>
+  </g>
+</svg>

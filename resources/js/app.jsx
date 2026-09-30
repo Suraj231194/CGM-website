@@ -5,10 +5,11 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'biogenixCGM';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    // Pages pass a short title ("Compare Products"); the brand is appended once, here.
+    title: (title) => (title ? `${title} · ${appName}` : appName),
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.jsx`,
@@ -20,6 +21,7 @@ createInertiaApp({
         root.render(<App {...props} />);
     },
     progress: {
-        color: '#4B5563',
+        color: '#2f8683',
+        showSpinner: false,
     },
 });

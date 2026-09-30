@@ -1,32 +1,27 @@
 import { Link, usePage, router, useForm } from '@inertiajs/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
-    Activity,
-    Menu,
-    X,
-    Phone,
-    Mail,
-    Shield,
-    ShoppingCart,
-    User,
-    LogOut,
-    Package,
-    ChevronDown,
-    Plus,
-    Minus,
-    Trash2,
-    Loader2,
-    Truck,
-    CreditCard,
-    CheckCircle,
-    AlertCircle,
-    ShieldCheck,
     ArrowRight,
+    ChevronDown,
+    Loader2,
+    LogOut,
+    Mail,
+    Menu,
     MessageSquare,
+    Minus,
+    Paperclip,
+    Phone,
+    Plus,
     Send,
-    Paperclip
+    Shield,
+    ShieldCheck,
+    ShoppingBag,
+    Trash2,
+    User,
+    X,
 } from 'lucide-react';
 import axios from 'axios';
+import Logo from '@/Components/Logo';
 
 const navLinks = [
     { label: 'Products', href: '/products' },
@@ -34,9 +29,40 @@ const navLinks = [
     { label: 'How It Works', href: '/how-it-works' },
     { label: 'Resources', href: '/resources' },
     { label: 'Support', href: '/support' },
-    { label: 'HCP', href: '/hcp' },
+    { label: 'For Providers', href: '/hcp' },
     { label: 'Blog', href: '/blog' },
 ];
+
+const footerColumns = [
+    {
+        title: 'Products',
+        links: [
+            { label: 'All products', href: '/products' },
+            { label: 'Compare products', href: '/compare' },
+            { label: 'How it works', href: '/how-it-works' },
+            { label: 'Resources & downloads', href: '/resources' },
+        ],
+    },
+    {
+        title: 'Support',
+        links: [
+            { label: 'Support & FAQs', href: '/support' },
+            { label: 'Manuals & guides', href: '/resources' },
+            { label: 'Safety information', href: '/support#safety' },
+            { label: 'Contact us', href: '/contact' },
+        ],
+    },
+    {
+        title: 'Company',
+        links: [
+            { label: 'Learning center', href: '/blog' },
+            { label: 'Healthcare providers', href: '/hcp' },
+            { label: 'Request information', href: '/contact' },
+        ],
+    },
+];
+
+const formatPrice = (value) => `₹${Number(value).toLocaleString('en-IN')}`;
 
 export default function MainLayout({ children }) {
     const { url, props } = usePage();
@@ -45,6 +71,9 @@ export default function MainLayout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [showFlash, setShowFlash] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const cartCloseRef = useRef(null);
+    const mobileCloseRef = useRef(null);
 
     // Support Widget States
     const [supportOpen, setSupportOpen] = useState(false);
@@ -134,7 +163,7 @@ export default function MainLayout({ children }) {
     // Listen for direct URL query params or flash redirect opens
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        
+
         // Cart check
         if (params.get('cart') === '1' || flash?.open_cart) {
             setCartOpen(true);
@@ -150,285 +179,408 @@ export default function MainLayout({ children }) {
         }
     }, [cartOpen, cartCount]);
 
+    // The header tightens and gains a hairline once the page starts to scroll.
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
+
+    // Overlays lock the page behind them, take focus, and close on Escape.
+    useEffect(() => {
+        const overlayOpen = mobileOpen || cartOpen;
+        document.documentElement.style.overflow = overlayOpen ? 'hidden' : '';
+        if (cartOpen) cartCloseRef.current?.focus();
+        else if (mobileOpen) mobileCloseRef.current?.focus();
+        return () => {
+            document.documentElement.style.overflow = '';
+        };
+    }, [mobileOpen, cartOpen]);
+
+    useEffect(() => {
+        const onKey = (e) => {
+            if (e.key !== 'Escape') return;
+            if (cartOpen) handleCloseCart();
+            else if (mobileOpen) setMobileOpen(false);
+            else if (supportOpen) setSupportOpen(false);
+            else if (userMenuOpen) setUserMenuOpen(false);
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    });
+
+    const isActive = (href) => url === href || url.startsWith(`${href}/`) || url.startsWith(`${href}?`);
+
+    const cartButton = (
+        <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink-800 transition hover:bg-ink-900/5"
+            aria-label={cartCount > 0 ? `Open cart, ${cartCount} item${cartCount === 1 ? '' : 's'}` : 'Open cart'}
+        >
+            <ShoppingBag size={20} aria-hidden="true" />
+            {cartCount > 0 && (
+                <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-brand-700 px-1 text-[10px] font-bold text-white ring-2 ring-canvas">
+                    {cartCount}
+                </span>
+            )}
+        </button>
+    );
+
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="flex min-h-screen flex-col">
+            <a
+                href="#main"
+                className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:rounded-full focus:bg-ink-950 focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white"
+            >
+                Skip to main content
+            </a>
+
             {/* Flash Message Toast */}
             {showFlash && (flash?.success || flash?.error) && (
-                <div className={`fixed top-20 right-4 z-[100] px-5 py-3 rounded-xl shadow-2xl text-sm font-medium animate-fade-in-up ${flash?.success ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                    {flash?.success || flash?.error}
+                <div
+                    role="status"
+                    className={`fixed right-4 top-24 z-[100] flex max-w-sm items-start gap-3 rounded-2xl px-5 py-4 text-sm font-medium shadow-lift animate-fade-in-up ${flash?.success ? 'bg-ink-950 text-white' : 'bg-red-700 text-white'}`}
+                >
+                    {flash?.success ? <ShieldCheck size={18} className="mt-px shrink-0 text-glow" aria-hidden="true" /> : <Shield size={18} className="mt-px shrink-0" aria-hidden="true" />}
+                    <span>{flash?.success || flash?.error}</span>
                 </div>
             )}
 
             {/* Utility Bar */}
-            <div className="bg-teal-900 text-teal-100 text-xs py-1.5">
-                <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
-                    <div className="flex items-center gap-4">
-                        <a href="tel:1-800-BIOGENIXCGM" className="flex items-center gap-1 hover:text-white transition-colors">
-                            <Phone size={12} /> 1-800-BIOGENIXCGM
+            <div className="bg-ink-950 text-[13px] text-white/70">
+                <div className="container-page flex h-10 items-center justify-between gap-4">
+                    <div className="flex items-center gap-5">
+                        <a href="tel:1-800-BIOGENIXCGM" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                            <Phone size={13} aria-hidden="true" /> 1-800-BIOGENIXCGM
                         </a>
-                        <a href="mailto:support@biogenixcgm.com" className="hidden sm:flex items-center gap-1 hover:text-white transition-colors">
-                            <Mail size={12} /> support@biogenixcgm.com
+                        <a href="mailto:support@biogenixcgm.com" className="hidden items-center gap-1.5 transition-colors hover:text-white sm:flex">
+                            <Mail size={13} aria-hidden="true" /> support@biogenixcgm.com
                         </a>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <Link href="/support" className="hover:text-white transition-colors">Safety Info</Link>
+                    <div className="flex items-center gap-5">
+                        <Link href="/support#safety" className="flex items-center gap-1.5 transition-colors hover:text-white">
+                            <ShieldCheck size={13} aria-hidden="true" /> <span className="hidden sm:inline">Safety information</span><span className="sm:hidden">Safety</span>
+                        </Link>
+                        <Link href="/hcp" className="hidden transition-colors hover:text-white md:inline">Healthcare professionals</Link>
                         {auth?.user?.role === 'admin' && (
-                            <Link href="/admin" className="text-amber-300 hover:text-amber-200 transition-colors font-semibold">Admin Panel</Link>
+                            <Link href="/admin" className="font-semibold text-glow transition-colors hover:text-white">Admin Panel</Link>
                         )}
                     </div>
                 </div>
             </div>
 
             {/* Main Header */}
-            <header className="glass-header sticky top-0 z-40 shadow-sm bg-white/90 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <div className="w-9 h-9 bg-gradient-to-br from-teal-600 to-teal-800 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300">
-                            <Activity size={20} className="text-white" />
-                        </div>
-                        <span className="text-xl font-bold text-slate-800 tracking-tight">
-                            Biogenix<span className="text-teal-700">CGM</span>
-                        </span>
-                    </Link>
+            <header className={`glass-header sticky top-0 z-40 transition-shadow duration-300 ${scrolled ? 'shadow-soft' : ''}`}>
+                <div className={`container-page flex items-center justify-between gap-6 transition-[height] duration-300 ease-premium ${scrolled ? 'h-16' : 'h-[72px]'}`}>
+                    <Logo />
 
                     {/* Desktop Nav */}
-                    <nav className="hidden lg:flex items-center gap-1">
-                        {navLinks.map((link) => (
-                            <Link key={link.href} href={link.href}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${url.startsWith(link.href) ? 'text-teal-700 bg-teal-50' : 'text-slate-600 hover:text-teal-700 hover:bg-slate-50'}`}>
-                                {link.label}
-                            </Link>
-                        ))}
+                    <nav aria-label="Primary" className="hidden items-center gap-0.5 xl:flex">
+                        {navLinks.map((link) => {
+                            const active = isActive(link.href);
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    aria-current={active ? 'page' : undefined}
+                                    className={`relative rounded-full px-3.5 py-2 text-[0.9rem] font-medium transition-colors duration-200 ${active ? 'text-ink-950' : 'text-ink-500 hover:text-ink-950'}`}
+                                >
+                                    {link.label}
+                                    <span className={`absolute inset-x-3.5 -bottom-px h-[2px] rounded-full bg-brand-600 transition-transform duration-300 ease-premium ${active ? 'scale-x-100' : 'scale-x-0'}`} aria-hidden="true" />
+                                </Link>
+                            );
+                        })}
                     </nav>
 
                     {/* Desktop Right Actions */}
-                    <div className="hidden lg:flex items-center gap-3">
-                        {/* Cart Link */}
-                        <button onClick={() => setCartOpen(true)} className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors">
-                            <ShoppingCart size={22} />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-teal-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </button>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                        <Link href="/contact" className="btn-primary hidden !px-5 !py-2.5 text-sm sm:inline-flex">
+                            Request info
+                        </Link>
+
+                        {cartButton}
 
                         {/* User Profile dropdown */}
-                        {auth?.user ? (
-                            <div className="relative">
-                                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100 transition-colors animate-fade-in">
-                                    <User size={18} />
-                                    <span className="max-w-[100px] truncate">{auth.user.name}</span>
-                                    <ChevronDown size={14} />
-                                </button>
-                                {userMenuOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
-                                        <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-2 animate-fade-in z-50">
-                                            <Link href="/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50" onClick={() => setUserMenuOpen(false)}>
-                                                <User size={16} /> My Profile
-                                            </Link>
-                                            <hr className="my-1 border-slate-100" />
-                                            <Link href="/logout" method="post" as="button" className="flex items-center gap-2 px-4 py-2.5 text-sm text-red-605 hover:bg-red-50 w-full text-left">
-                                                <LogOut size={16} /> Logout
-                                            </Link>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-700 transition-colors">Login</Link>
-                                <Link href="/register" className="btn-primary text-sm px-5 py-2.5">Sign Up</Link>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Mobile Menu & Cart */}
-                    <div className="flex lg:hidden items-center gap-2">
-                        <button onClick={() => setCartOpen(true)} className="relative p-2 rounded-lg text-slate-600 hover:bg-slate-100">
-                            <ShoppingCart size={22} />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-teal-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>
+                        <div className="hidden xl:block">
+                            {auth?.user ? (
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                        aria-expanded={userMenuOpen}
+                                        aria-haspopup="menu"
+                                        className="flex items-center gap-2 rounded-full py-2 pl-2 pr-3 text-sm font-medium text-ink-700 transition hover:bg-ink-900/5"
+                                    >
+                                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
+                                            {auth.user.name?.charAt(0)}
+                                        </span>
+                                        <span className="max-w-[100px] truncate">{auth.user.name}</span>
+                                        <ChevronDown size={14} aria-hidden="true" className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {userMenuOpen && (
+                                        <>
+                                            <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
+                                            <div role="menu" className="absolute right-0 z-50 mt-2 w-52 animate-fade-in rounded-2xl border border-ink-900/[0.06] bg-white p-1.5 shadow-lift">
+                                                <Link href="/profile" role="menuitem" className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm text-ink-700 hover:bg-sand-100" onClick={() => setUserMenuOpen(false)}>
+                                                    <User size={16} aria-hidden="true" /> My Profile
+                                                </Link>
+                                                <Link href="/logout" method="post" as="button" role="menuitem" className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-red-700 hover:bg-red-50">
+                                                    <LogOut size={16} aria-hidden="true" /> Logout
+                                                </Link>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
+                                <Link href="/login" className="rounded-full px-3.5 py-2 text-sm font-medium text-ink-700 transition-colors hover:text-brand-700">
+                                    Log in
+                                </Link>
                             )}
-                        </button>
-                        <button onClick={() => setMobileOpen(!mobileOpen)} className="p-2 rounded-lg text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Toggle menu">
-                            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setMobileOpen(true)}
+                            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-800 transition hover:bg-ink-900/5 xl:hidden"
+                            aria-label="Open menu"
+                            aria-expanded={mobileOpen}
+                            aria-controls="mobile-menu"
+                        >
+                            <Menu size={22} aria-hidden="true" />
                         </button>
                     </div>
                 </div>
-
-                {/* Mobile Drawer menu */}
-                {mobileOpen && (
-                    <div className="lg:hidden border-t border-slate-200 bg-white animate-slide-down">
-                        <nav className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
-                            {navLinks.map((link) => (
-                                <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
-                                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${url.startsWith(link.href) ? 'text-teal-700 bg-teal-50' : 'text-slate-600 hover:bg-slate-50'}`}>
-                                    {link.label}
-                                </Link>
-                            ))}
-                            <hr className="my-2 border-slate-100" />
-                            {auth?.user ? (
-                                <>
-                                    <Link href="/profile" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">My Profile</Link>
-                                    <Link href="/logout" method="post" as="button" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-red-650 hover:bg-red-50 text-left w-full">Logout</Link>
-                                </>
-                            ) : (
-                                <>
-                                    <Link href="/login" onClick={() => setMobileOpen(false)} className="px-4 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Login</Link>
-                                    <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-primary text-sm mt-2 text-center">Sign Up</Link>
-                                </>
-                            )}
-                        </nav>
-                    </div>
-                )}
             </header>
 
-            <main className="flex-1">{children}</main>
-
-            {/* Footer */}
-            <footer className="bg-slate-900 text-slate-300">
-                <div className="max-w-7xl mx-auto px-4 py-16">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-teal-700 rounded-xl flex items-center justify-center">
-                                    <Activity size={18} className="text-white" />
+            {/* Mobile Drawer menu */}
+            <div
+                className={`fixed inset-0 z-50 xl:hidden ${mobileOpen ? 'visible' : 'invisible'}`}
+                aria-hidden={!mobileOpen}
+            >
+                <div
+                    className={`absolute inset-0 bg-ink-950/50 backdrop-blur-sm transition-opacity duration-300 ${mobileOpen ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => setMobileOpen(false)}
+                />
+                <div
+                    id="mobile-menu"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Menu"
+                    className={`absolute right-0 top-0 flex h-full w-full max-w-sm flex-col bg-canvas shadow-lift transition-transform duration-500 ease-premium ${mobileOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                >
+                    <div className="flex h-[72px] items-center justify-between border-b border-ink-900/[0.06] px-5">
+                        <Logo />
+                        <button
+                            ref={mobileCloseRef}
+                            type="button"
+                            onClick={() => setMobileOpen(false)}
+                            className="flex h-10 w-10 items-center justify-center rounded-full text-ink-800 hover:bg-ink-900/5"
+                            aria-label="Close menu"
+                        >
+                            <X size={22} aria-hidden="true" />
+                        </button>
+                    </div>
+                    <nav aria-label="Mobile" className="flex-1 overflow-y-auto px-5 py-6">
+                        <ul className="space-y-1">
+                            {navLinks.map((link) => (
+                                <li key={link.href}>
+                                    <Link
+                                        href={link.href}
+                                        onClick={() => setMobileOpen(false)}
+                                        aria-current={isActive(link.href) ? 'page' : undefined}
+                                        className={`flex items-center justify-between rounded-2xl px-4 py-3.5 font-display text-2xl transition-colors ${isActive(link.href) ? 'bg-white text-brand-700 shadow-soft' : 'text-ink-900 hover:bg-white'}`}
+                                    >
+                                        {link.label}
+                                        <ArrowRight size={18} className="text-ink-300" aria-hidden="true" />
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="mt-6 border-t border-ink-900/[0.06] pt-6">
+                            {auth?.user ? (
+                                <div className="space-y-1">
+                                    <Link href="/profile" onClick={() => setMobileOpen(false)} className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-ink-700 hover:bg-white">
+                                        <User size={18} aria-hidden="true" /> My Profile
+                                    </Link>
+                                    <Link href="/logout" method="post" as="button" onClick={() => setMobileOpen(false)} className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-700 hover:bg-red-50">
+                                        <LogOut size={18} aria-hidden="true" /> Logout
+                                    </Link>
                                 </div>
-                                <span className="text-lg font-bold text-white">BiogenixCGM</span>
-                            </div>
-                            <p className="text-sm text-slate-400 leading-relaxed">Advanced diabetes management technology designed to simplify your life and improve outcomes.</p>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-3">
+                                    <Link href="/login" onClick={() => setMobileOpen(false)} className="btn-secondary">Log in</Link>
+                                    <Link href="/register" onClick={() => setMobileOpen(false)} className="btn-secondary">Sign up</Link>
+                                </div>
+                            )}
                         </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Products</h3>
-                            <ul className="space-y-2.5">
-                                <li><Link href="/products" className="text-sm hover:text-teal-400 transition-colors">All Products</Link></li>
-                                <li><Link href="/compare" className="text-sm hover:text-teal-400 transition-colors">Compare</Link></li>
-                                <li><Link href="/resources" className="text-sm hover:text-teal-400 transition-colors">Resources</Link></li>
-                                <li><Link href="/support" className="text-sm hover:text-teal-400 transition-colors">Support</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Company</h3>
-                            <ul className="space-y-2.5">
-                                <li><Link href="/blog" className="text-sm hover:text-teal-400 transition-colors">Blog</Link></li>
-                                <li><Link href="/hcp" className="text-sm hover:text-teal-400 transition-colors">Healthcare Providers</Link></li>
-                                <li><Link href="/contact" className="text-sm hover:text-teal-400 transition-colors">Contact</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">Legal</h3>
-                            <ul className="space-y-2.5">
-                                <li><a href="#" className="text-sm hover:text-teal-400 transition-colors">Privacy Policy</a></li>
-                                <li><a href="#" className="text-sm hover:text-teal-400 transition-colors">Terms of Service</a></li>
-                            </ul>
-                        </div>
+                    </nav>
+                    <div className="border-t border-ink-900/[0.06] p-5">
+                        <Link href="/contact" onClick={() => setMobileOpen(false)} className="btn-primary w-full gap-2">
+                            Request information <ArrowRight size={18} aria-hidden="true" />
+                        </Link>
+                        <a href="tel:1-800-BIOGENIXCGM" className="mt-3 flex items-center justify-center gap-2 text-sm text-ink-500">
+                            <Phone size={14} aria-hidden="true" /> 1-800-BIOGENIXCGM · 24/7
+                        </a>
                     </div>
                 </div>
-                <div className="border-t border-slate-800">
-                    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-xs text-slate-500">© {new Date().getFullYear()} BiogenixCGM. All rights reserved.</p>
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                            <Shield size={14} className="text-amber-500" />
-                            <span>Medical devices. Read all warnings before use. Consult your healthcare provider.</span>
+            </div>
+
+            <main id="main" className="flex-1">{children}</main>
+
+            {/* Footer */}
+            <footer className="bg-radiance grain relative overflow-hidden text-white/70">
+                <div className="container-page relative pb-10 pt-20">
+                    <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr]">
+                        <div className="max-w-sm">
+                            <Logo tone="dark" />
+                            <p className="mt-6 font-display text-2xl leading-snug text-white">
+                                Advanced diabetes management, designed to disappear into your day.
+                            </p>
+                            <div className="mt-8 flex flex-col gap-3 text-sm">
+                                <a href="tel:1-800-BIOGENIXCGM" className="flex items-center gap-2.5 transition-colors hover:text-white">
+                                    <Phone size={15} className="text-glow" aria-hidden="true" /> 1-800-BIOGENIXCGM
+                                </a>
+                                <a href="mailto:support@biogenixcgm.com" className="flex items-center gap-2.5 transition-colors hover:text-white">
+                                    <Mail size={15} className="text-glow" aria-hidden="true" /> support@biogenixcgm.com
+                                </a>
+                            </div>
                         </div>
+                        <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+                            {footerColumns.map((column) => (
+                                <div key={column.title}>
+                                    <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">{column.title}</h3>
+                                    <ul className="mt-5 space-y-3">
+                                        {column.links.map((link) => (
+                                            <li key={link.label}>
+                                                <Link href={link.href} className="text-sm transition-colors hover:text-glow">{link.label}</Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                            <div>
+                                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Legal</h3>
+                                <ul className="mt-5 space-y-3">
+                                    <li><a href="#" className="text-sm transition-colors hover:text-glow">Privacy Policy</a></li>
+                                    <li><a href="#" className="text-sm transition-colors hover:text-glow">Terms of Service</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-16 flex flex-col gap-4 border-t border-white/10 pt-8 text-xs text-white/50 md:flex-row md:items-center md:justify-between">
+                        <p>© {new Date().getFullYear()} biogenixCGM. All rights reserved.</p>
+                        <p className="flex items-start gap-2 md:items-center">
+                            <ShieldCheck size={14} className="mt-px shrink-0 text-glow md:mt-0" aria-hidden="true" />
+                            <span>Medical devices. Read all warnings before use. Consult your healthcare provider.</span>
+                        </p>
                     </div>
                 </div>
             </footer>
+
             {/* Sliding Cart Drawer */}
-            <div className={`fixed inset-0 z-50 transition-opacity ${cartOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`fixed inset-0 z-50 ${cartOpen ? 'visible' : 'invisible'}`} aria-hidden={!cartOpen}>
                 {/* Backdrop overlay */}
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleCloseCart} />
+                <div className={`absolute inset-0 bg-ink-950/50 backdrop-blur-sm transition-opacity duration-300 ${cartOpen ? 'opacity-100' : 'opacity-0'}`} onClick={handleCloseCart} />
 
                 {/* Right Drawer box */}
-                <div className={`fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl z-10 transform transition-transform duration-300 ease-out flex flex-col ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="cart-title"
+                    className={`absolute right-0 top-0 flex h-full w-full max-w-md flex-col bg-canvas shadow-lift transition-transform duration-500 ease-premium ${cartOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                >
                     {/* Header */}
-                    <div className="h-16 border-b px-6 flex items-center justify-between bg-slate-50">
-                        <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                            <ShoppingCart size={18} className="text-teal-700" /> Shopping Cart
+                    <div className="flex h-[72px] items-center justify-between border-b border-ink-900/[0.06] px-6">
+                        <h2 id="cart-title" className="flex items-center gap-2.5 font-display text-2xl text-ink-950">
+                            Your cart
+                            {cartCount > 0 && <span className="chip-brand font-sans">{cartCount}</span>}
                         </h2>
-                        <button onClick={handleCloseCart} className="p-1.5 hover:bg-slate-200 text-slate-500 rounded-lg transition">
-                            <X size={18} />
+                        <button ref={cartCloseRef} type="button" onClick={handleCloseCart} className="flex h-10 w-10 items-center justify-center rounded-full text-ink-700 transition hover:bg-ink-900/5" aria-label="Close cart">
+                            <X size={20} aria-hidden="true" />
                         </button>
                     </div>
 
                     {/* Loader */}
                     {loadingCart ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2">
-                            <Loader2 className="animate-spin text-teal-700" size={32} />
-                            <span className="text-sm font-semibold">Loading your cart...</span>
+                        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-ink-400">
+                            <Loader2 className="animate-spin text-brand-600" size={30} aria-hidden="true" />
+                            <span className="text-sm font-medium">Loading your cart…</span>
                         </div>
                     ) : cartItems.length === 0 ? (
                         /* Empty State */
-                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4 text-slate-400">
-                                <ShoppingCart size={28} />
-                            </div>
-                            <h3 className="text-base font-bold text-slate-800">Your cart is empty</h3>
-                            <p className="text-slate-500 text-sm mt-1 mb-6 max-w-xs">Looks like you haven't added anything to your cart yet.</p>
-                            <button onClick={handleCloseCart} className="btn-primary py-2.5 px-6 font-semibold text-sm">
-                                Shop Our Products
-                            </button>
+                        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+                            <span className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-ink-300 shadow-soft">
+                                <ShoppingBag size={26} aria-hidden="true" />
+                            </span>
+                            <h3 className="mt-5 font-display text-2xl text-ink-950">Your cart is empty</h3>
+                            <p className="mb-7 mt-2 max-w-xs text-sm text-ink-500">Looks like you haven&rsquo;t added anything to your cart yet.</p>
+                            <Link href="/products" onClick={handleCloseCart} className="btn-primary gap-2">
+                                Shop our products <ArrowRight size={16} aria-hidden="true" />
+                            </Link>
                         </div>
                     ) : (
                         /* Items List */
-                        <div className="flex-1 flex flex-col overflow-hidden">
-                            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                        <div className="flex flex-1 flex-col overflow-hidden">
+                            <ul className="flex-1 space-y-3 overflow-y-auto p-6">
                                 {cartItems.map((item) => (
-                                    <div key={item.id} className="flex gap-4 p-3 border border-slate-100 rounded-xl bg-slate-50/50 hover:bg-slate-50 transition">
+                                    <li key={item.id} className="flex gap-4 rounded-3xl border border-ink-900/[0.06] bg-white p-3">
                                         {/* Product Image */}
-                                        <div className="w-16 h-16 bg-white border rounded-lg p-1 flex items-center justify-center flex-shrink-0">
-                                            <img src={item.product.image_url} alt={item.product.name} className="max-h-full max-w-full object-contain" />
+                                        <div className="product-stage h-20 w-20 shrink-0 rounded-2xl">
+                                            <img src={item.product.image_url} alt="" className="h-16 w-16 object-contain" />
                                         </div>
-                                        
+
                                         {/* Item Info */}
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="text-sm font-bold text-slate-800 truncate">{item.product.name}</h4>
-                                            <p className="text-xs text-slate-500 mt-0.5">₹{Number(item.price).toLocaleString('en-IN')}</p>
-                                            
+                                        <div className="min-w-0 flex-1 py-1">
+                                            <h4 className="truncate text-sm font-semibold text-ink-900">{item.product.name}</h4>
+                                            <p className="mt-0.5 text-sm text-ink-500">{formatPrice(item.price)}</p>
+
                                             {/* Stepper & Trash */}
-                                            <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-1 border border-slate-200 rounded-lg bg-white">
-                                                    <button 
+                                            <div className="mt-2.5 flex items-center justify-between">
+                                                <div className="flex items-center rounded-full border border-ink-900/10 bg-white">
+                                                    <button
                                                         type="button"
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                                                        className="p-1 hover:bg-slate-50 rounded-l-lg transition"
+                                                        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
                                                         disabled={item.quantity <= 1}
+                                                        aria-label={`Decrease quantity of ${item.product.name}`}
                                                     >
-                                                        <Minus size={12} className="text-slate-500" />
+                                                        <Minus size={13} aria-hidden="true" />
                                                     </button>
-                                                    <span className="w-6 text-center text-xs font-bold text-slate-800">{item.quantity}</span>
-                                                    <button 
+                                                    <span className="w-7 text-center text-sm font-semibold tabular-nums text-ink-900" aria-live="polite">{item.quantity}</span>
+                                                    <button
                                                         type="button"
                                                         onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                                                        className="p-1 hover:bg-slate-50 rounded-r-lg transition"
+                                                        className="flex h-8 w-8 items-center justify-center rounded-full text-ink-500 transition hover:bg-sand-100 disabled:opacity-40"
                                                         disabled={item.quantity >= 10}
+                                                        aria-label={`Increase quantity of ${item.product.name}`}
                                                     >
-                                                        <Plus size={12} className="text-slate-500" />
+                                                        <Plus size={13} aria-hidden="true" />
                                                     </button>
                                                 </div>
-                                                
-                                                <button 
+
+                                                <button
                                                     type="button"
                                                     onClick={() => handleRemoveItem(item.id)}
-                                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition"
+                                                    className="flex h-8 w-8 items-center justify-center rounded-full text-ink-400 transition hover:bg-red-50 hover:text-red-700"
                                                     title="Remove item"
+                                                    aria-label={`Remove ${item.product.name}`}
                                                 >
-                                                    <Trash2 size={14} />
+                                                    <Trash2 size={15} aria-hidden="true" />
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </li>
                                 ))}
-                            </div>
+                            </ul>
 
                             {/* Footer */}
-                            <div className="p-6 border-t bg-slate-50 space-y-4">
-                                <div className="flex justify-between items-baseline mb-2">
-                                    <span className="font-bold text-slate-850 text-sm">Subtotal</span>
-                                    <span className="text-lg font-extrabold text-teal-700">₹{Number(cartSubtotal).toLocaleString('en-IN')}</span>
+                            <div className="space-y-4 border-t border-ink-900/[0.06] bg-white p-6">
+                                <div className="flex items-baseline justify-between">
+                                    <span className="text-sm font-medium text-ink-600">Subtotal</span>
+                                    <span className="font-display text-2xl text-ink-950">{formatPrice(cartSubtotal)}</span>
                                 </div>
                                 <button
                                     type="button"
@@ -436,10 +588,13 @@ export default function MainLayout({ children }) {
                                         setCartOpen(false);
                                         router.visit('/checkout');
                                     }}
-                                    className="btn-primary w-full py-3.5 text-center justify-center font-bold flex items-center gap-1.5"
+                                    className="btn-primary w-full gap-2 !py-4"
                                 >
-                                    Proceed to Checkout <ArrowRight size={16} />
+                                    Proceed to checkout <ArrowRight size={16} aria-hidden="true" />
                                 </button>
+                                <p className="flex items-center justify-center gap-1.5 text-xs text-ink-400">
+                                    <ShieldCheck size={13} aria-hidden="true" /> Secure checkout
+                                </p>
                             </div>
                         </div>
                     )}
@@ -447,128 +602,128 @@ export default function MainLayout({ children }) {
             </div>
 
             {/* Floating Support Button & Widget */}
-            <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end pointer-events-none">
+            <div className="pointer-events-none fixed bottom-5 right-5 z-40 flex flex-col items-end sm:bottom-6 sm:right-6">
                 {/* Support Widget Card */}
-                <div className={`w-[320px] sm:w-[380px] bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden mb-4 transition-all duration-300 transform origin-bottom-right ${
-                    supportOpen 
-                        ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto' 
-                        : 'opacity-0 scale-90 translate-y-4 pointer-events-none'
-                }`}>
+                <div
+                    id="support-widget"
+                    role="dialog"
+                    aria-label="Support"
+                    aria-hidden={!supportOpen}
+                    className={`mb-4 w-[calc(100vw-2.5rem)] max-w-[380px] origin-bottom-right overflow-hidden rounded-4xl border border-ink-900/[0.06] bg-white shadow-lift transition-all duration-500 ease-premium ${
+                        supportOpen
+                            ? 'pointer-events-auto visible translate-y-0 scale-100 opacity-100'
+                            : 'invisible translate-y-4 scale-95 opacity-0'
+                    }`}
+                >
                     {/* Header */}
-                    <div className="bg-teal-900 text-white p-5 flex items-center justify-between">
+                    <div className="bg-radiance grain relative flex items-start justify-between p-6 text-white">
                         <div>
-                            <h3 className="font-extrabold text-sm tracking-wide uppercase flex items-center gap-1.5">
-                                <MessageSquare size={16} className="text-teal-400" /> Biogenix Support
+                            <h3 className="flex items-center gap-2 font-display text-xl">
+                                <MessageSquare size={18} className="text-glow" aria-hidden="true" /> biogenix Support
                             </h3>
-                            <p className="text-[11px] text-teal-200 mt-0.5">Need help? Open a support ticket below.</p>
+                            <p className="mt-1 text-xs text-white/65">Need help? Open a support ticket below.</p>
                         </div>
-                        <button onClick={() => setSupportOpen(false)} className="text-teal-200 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
-                            <X size={16} />
+                        <button type="button" onClick={() => setSupportOpen(false)} className="rounded-full p-1.5 text-white/70 transition hover:bg-white/10 hover:text-white" aria-label="Close support">
+                            <X size={16} aria-hidden="true" />
                         </button>
                     </div>
 
                     {/* Content */}
                     {auth?.user ? (
                         /* Logged In: Ticket Form */
-                        <form onSubmit={handleSupportSubmit} className="p-6 space-y-4">
-                            <div className="space-y-1.5">
-                                <label htmlFor="support_subject" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Concern Subject</label>
+                        <form onSubmit={handleSupportSubmit} className="space-y-4 p-6">
+                            <div>
+                                <label htmlFor="support_subject" className="field-label">Subject</label>
                                 <input
                                     type="text"
                                     id="support_subject"
                                     value={supportForm.data.subject}
                                     onChange={(e) => supportForm.setData('subject', e.target.value)}
-                                    placeholder="e.g. Order Delivery, Device Setup, Billing"
-                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-xs py-2.5 placeholder:text-slate-400"
+                                    placeholder="e.g. Order delivery, device setup, billing"
+                                    className="field !py-2.5 text-sm"
                                     required
                                 />
                                 {supportForm.errors.subject && (
-                                    <p className="text-xs font-semibold text-red-600 mt-1">{supportForm.errors.subject}</p>
+                                    <p className="field-error">{supportForm.errors.subject}</p>
                                 )}
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label htmlFor="support_description" className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Detailed Message</label>
+                            <div>
+                                <label htmlFor="support_description" className="field-label">Message</label>
                                 <textarea
                                     id="support_description"
                                     rows="4"
                                     value={supportForm.data.description}
                                     onChange={(e) => supportForm.setData('description', e.target.value)}
                                     placeholder="Describe your issue or question in detail..."
-                                    className="w-full rounded-xl border-slate-200 focus:border-teal-500 focus:ring-teal-500 text-xs py-2.5 placeholder:text-slate-400"
+                                    className="field resize-none !py-2.5 text-sm"
                                     required
                                 />
                                 {supportForm.errors.description && (
-                                    <p className="text-xs font-semibold text-red-600 mt-1">{supportForm.errors.description}</p>
+                                    <p className="field-error">{supportForm.errors.description}</p>
                                 )}
                             </div>
 
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Attachment (Optional, Max 4MB)</label>
+                            <div>
+                                <span className="field-label">Attachment <span className="font-normal text-ink-400">(optional, max 4MB)</span></span>
                                 <div className="flex items-center gap-3">
-                                    <label className="flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl cursor-pointer transition">
-                                        <Paperclip size={14} /> {supportForm.data.image ? 'Change Image' : 'Choose Image'}
+                                    <label className="flex cursor-pointer items-center gap-1.5 rounded-full border border-ink-900/10 bg-sand-50 px-4 py-2 text-xs font-semibold text-ink-700 transition hover:bg-sand-100">
+                                        <Paperclip size={14} aria-hidden="true" /> {supportForm.data.image ? 'Change image' : 'Choose image'}
                                         <input
                                             type="file"
                                             accept="image/*"
                                             onChange={handleSupportFileChange}
-                                            className="hidden"
+                                            className="sr-only"
                                         />
                                     </label>
                                     {supportForm.data.image && (
-                                        <div className="flex items-center gap-1.5 text-xs text-teal-700 bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-150 max-w-[200px] truncate">
+                                        <div className="flex min-w-0 max-w-[200px] items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs text-brand-700">
                                             <span className="truncate">{supportForm.data.image.name}</span>
-                                            <button 
-                                                type="button" 
+                                            <button
+                                                type="button"
                                                 onClick={() => supportForm.setData('image', null)}
-                                                className="text-red-500 hover:text-red-700"
+                                                className="shrink-0 text-ink-400 hover:text-red-700"
                                                 title="Remove file"
+                                                aria-label="Remove attachment"
                                             >
-                                                <X size={12} />
+                                                <X size={12} aria-hidden="true" />
                                             </button>
                                         </div>
                                     )}
                                 </div>
                                 {supportForm.errors.image && (
-                                    <p className="text-xs font-semibold text-red-600 mt-1">{supportForm.errors.image}</p>
+                                    <p className="field-error">{supportForm.errors.image}</p>
                                 )}
                             </div>
 
-                            <div className="pt-2">
-                                <button
-                                    type="submit"
-                                    disabled={supportForm.processing}
-                                    className="w-full btn-primary text-xs py-3 justify-center font-bold flex items-center gap-1.5 disabled:opacity-50"
-                                >
-                                    {supportForm.processing ? 'Submitting Ticket...' : 'Submit Support Ticket'} <Send size={12} />
-                                </button>
-                            </div>
+                            <button
+                                type="submit"
+                                disabled={supportForm.processing}
+                                className="btn-primary w-full gap-2 text-sm"
+                            >
+                                {supportForm.processing ? 'Submitting ticket…' : 'Submit support ticket'} <Send size={14} aria-hidden="true" />
+                            </button>
                         </form>
                     ) : (
                         /* Guest Prompt */
-                        <div className="p-8 text-center space-y-5">
-                            <div className="w-16 h-16 bg-amber-50 rounded-full border border-amber-100 flex items-center justify-center mx-auto text-amber-600">
-                                <Shield size={28} />
-                            </div>
+                        <div className="space-y-5 p-7 text-center">
+                            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-brand-50 text-brand-700">
+                                <Shield size={24} aria-hidden="true" />
+                            </span>
                             <div className="space-y-1.5">
-                                <h4 className="font-extrabold text-sm text-slate-800">Authentication Required</h4>
-                                <p className="text-xs text-slate-500 leading-relaxed">Please sign in to raise a support ticket. This enables us to maintain a secure communication log and track your inquiries over time.</p>
+                                <h4 className="font-display text-xl text-ink-950">Sign in for secure support</h4>
+                                <p className="text-sm leading-relaxed text-ink-500">Please sign in to raise a support ticket. This enables us to maintain a secure communication log and track your inquiries over time.</p>
                             </div>
-                            <div className="flex flex-col gap-2 pt-2">
-                                <Link 
-                                    href="/login" 
-                                    onClick={() => setSupportOpen(false)}
-                                    className="btn-primary text-xs py-3 text-center justify-center font-bold"
-                                >
-                                    Log In
+                            <div className="flex flex-col gap-2 pt-1">
+                                <Link href="/login" onClick={() => setSupportOpen(false)} className="btn-primary text-sm">
+                                    Log in
                                 </Link>
-                                <Link 
-                                    href="/register" 
-                                    onClick={() => setSupportOpen(false)}
-                                    className="text-xs font-bold text-teal-700 hover:text-teal-800 hover:underline text-center py-2"
-                                >
-                                    Create a New Account
+                                <Link href="/register" onClick={() => setSupportOpen(false)} className="py-2 text-sm font-semibold text-brand-700 hover:text-brand-900">
+                                    Create a new account
                                 </Link>
+                                <a href="tel:1-800-BIOGENIXCGM" className="flex items-center justify-center gap-1.5 text-xs text-ink-400">
+                                    <Phone size={12} aria-hidden="true" /> Or call 1-800-BIOGENIXCGM, 24/7
+                                </a>
                             </div>
                         </div>
                     )}
@@ -576,11 +731,16 @@ export default function MainLayout({ children }) {
 
                 {/* Bubble Toggle Button */}
                 <button
+                    type="button"
                     onClick={() => setSupportOpen(!supportOpen)}
-                    className="w-14 h-14 bg-teal-700 hover:bg-teal-800 text-white rounded-full flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 animate-bounce pointer-events-auto"
-                    title="Toggle Support Center"
+                    className="pointer-events-auto group relative flex h-14 w-14 items-center justify-center rounded-full bg-ink-950 text-white shadow-lift transition duration-300 ease-premium hover:scale-105 hover:bg-brand-800 active:scale-95"
+                    aria-label={supportOpen ? 'Close support' : 'Open support'}
+                    aria-expanded={supportOpen}
+                    aria-controls="support-widget"
+                    title="Support"
                 >
-                    {supportOpen ? <X size={24} /> : <MessageSquare size={24} />}
+                    {!supportOpen && <span className="absolute inset-0 rounded-full bg-brand-500/40 animate-pulse-ring [animation-iteration-count:2]" aria-hidden="true" />}
+                    {supportOpen ? <X size={22} aria-hidden="true" /> : <MessageSquare size={22} aria-hidden="true" />}
                 </button>
             </div>
         </div>

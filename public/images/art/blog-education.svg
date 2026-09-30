@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-labelledby="t">
+  <title id="t">Abstract cover art: a time-in-range ring with most of the day inside the target range</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eef7f6"/>
+      <stop offset="1" stop-color="#f3f1ea"/>
+    </linearGradient>
+    <pattern id="dots" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.6" fill="#1d5859" opacity="0.12"/>
+    </pattern>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%">
+      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-color="#122326" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <rect x="440" width="360" height="500" fill="url(#dots)"/>
+  <circle cx="300" cy="250" r="210" fill="#7de3d3" opacity="0.18"/>
+
+  <!-- Ring: 70% in range, 22% high, 8% low. Circumference at r=120 is 753.98. -->
+  <g transform="translate(300 250) rotate(-90)" filter="url(#shadow)">
+    <circle r="150" fill="#ffffff"/>
+  </g>
+  <g transform="translate(300 250) rotate(-90)" fill="none" stroke-width="34">
+    <circle r="120" stroke="#e7e3d8"/>
+    <circle r="120" stroke="#2f8683" stroke-dasharray="527.8 226.2"/>
+    <circle r="120" stroke="#f5b54a" stroke-dasharray="165.9 588.1" stroke-dashoffset="-527.8"/>
+    <circle r="120" stroke="#344447" stroke-dasharray="60.3 693.7" stroke-dashoffset="-693.7"/>
+  </g>
+  <circle cx="300" cy="250" r="86" fill="#f7f6f2"/>
+  <rect x="254" y="226" width="92" height="22" rx="11" fill="#122326"/>
+  <rect x="266" y="258" width="68" height="10" rx="5" fill="#c7d2d4"/>
+
+  <!-- Legend -->
+  <g filter="url(#shadow)">
+    <rect x="520" y="138" width="200" height="56" rx="28" fill="#ffffff"/>
+    <rect x="520" y="222" width="200" height="56" rx="28" fill="#ffffff"/>
+    <rect x="520" y="306" width="200" height="56" rx="28" fill="#ffffff"/>
+  </g>
+  <circle cx="552" cy="166" r="11" fill="#2f8683"/>
+  <rect x="574" y="160" width="112" height="12" rx="6" fill="#122326"/>
+  <circle cx="552" cy="250" r="11" fill="#f5b54a"/>
+  <rect x="574" y="244" width="90" height="12" rx="6" fill="#56696c"/>
+  <circle cx="552" cy="334" r="11" fill="#344447"/>
+  <rect x="574" y="328" width="70" height="12" rx="6" fill="#56696c"/>
+</svg>
